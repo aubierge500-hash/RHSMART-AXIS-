@@ -11,7 +11,7 @@
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
 const BACKEND_URL = window.location.hostname === 'localhost'
-  ? 'http://localhost:4000'
+  ? 'https://rhsmart-axis-1.onrender.com'
   : 'https://api.rhsmart-axis.com';  // ← Remplacez par votre domaine
 
 // ─── STATE ─────────────────────────────────────────────────────────────────
