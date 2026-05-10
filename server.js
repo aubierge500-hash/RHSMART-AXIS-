@@ -16,6 +16,15 @@ app.get('/', (req, res) => {
   res.json({ status: 'RHSMART-AXIS opérationnel' });
 });
 
+app.post('/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email, password
+  });
+  if (error) return res.status(401).json({ error: error.message });
+  res.json({ token: data.session.access_token, user: data.user });
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
