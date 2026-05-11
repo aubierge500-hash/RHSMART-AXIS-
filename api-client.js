@@ -1,4 +1,4 @@
-const SUPABASE_U = 'https://uaspipsffvtbiydswqwt.supabase.co/rest/v1/';
+const SUPABASE_URL = 'https://uaspipsffvtbiydswqwt.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_fop-_msYrKe-q7wEMkL-Hw_5RIg8EIo
 ';
 
