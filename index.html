@@ -10,7 +10,28 @@
 <h2>Connexion à votre espace RH</h2>
 <input type="email" id="email" placeholder="Email"><br><br>
 <input type="password" id="password" placeholder="Mot de passe"><br><br>
-<button onclick="login()">Se connecter</button>
-<script src="api-client.js"></script>
+<button id="btn">Se connecter</button>
+<p id="msg"></p>
+<script>
+document.getElementById('btn').addEventListener('click', async function(){
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  document.getElementById('msg').textContent = 'Connexion en cours...';
+  const res = await fetch('https://uaspipsffvtbiydswqwt.supabase.co/auth/v1/token?grant_type=password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': 'sb_publishable_fop-_msYrKe-q7wEMkL-Hw_5RIg8EIo'
+    },
+    body: JSON.stringify({email, password})
+  });
+  const data = await res.json();
+  if(data.access_token){
+    document.getElementById('msg').textContent = 'Connexion réussie !';
+  } else {
+    document.getElementById('msg').textContent = 'Erreur: ' + JSON.stringify(data);
+  }
+});
+</script>
 </body>
 </html>
