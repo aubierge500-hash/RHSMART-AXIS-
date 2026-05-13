@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RHSMART AXIS — Plateforme RH Multi-Tenant</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0a0f1e;
+  --surface: #111827;
+  --surface2: #1a2234;
+  --border: rgba(255,255,255,0.08);
+  --accent: #4f8ef7;
+  --accent2: #7c5af7;
+  --success: #22d3a5;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --text3: #475569;
+  --card: rgba(255,255,255,0.04);
+  --glow: 0 0 40px rgba(79,142,247,0.15);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+h1,h2,h3,h4,h5 { font-family: 'Syne', sans-serif; }
+
+/* ─── UTILS ─── */
+.hidden { display: none !important; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.mt-2 { margin-top: 8px; }
+.mt-4 { margin-top: 16px; }
+.text-sm { font-size: 13px; }
+.text-xs { font-size: 11px; }
+.font-bold { font-weight: 700; }
+.text-accent { color: var(--accent); }
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+.text-warning { color: var(--warning); }
+.text-muted { color: var(--text2); }
+.w-full { width: 100%; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+
+/* ─── BACKGROUNDS ─── */
+.bg-mesh {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(79,142,247,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(124,90,247,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(34,211,165,0.05) 0%, transparent 70%);
+}
+
+/* ─── TOAST ─── */
+#toast-container {
+  position: fixed; top: 20px; right: 20px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500;
+  animation: slideIn .3s ease; max-width: 320px;
+  border: 1px solid var(--border);
+}
+.toast.success { background: rgba(34,211,165,0.15); border-color: var(--success); color: var(--success); }
+.toast.error   { background: rgba(239,68,68,0.15);  border-color: var(--danger);  color: var(--danger); }
+.toast.info    { background: rgba(79,142,247,0.15);  border-color: var(--accent);  color: var(--accent); }
+@keyframes slideIn { from { transform: translateX(100px); opacity:0; } to { transform: translateX(0); opacity:1; } }
+
+/* ─── LOADER ─── */
+#global-loader {
+  position: fixed; inset: 0; background: var(--bg); z-index: 9998;
+  display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+}
+.spinner {
+  width: 48px; height: 48px; border: 3px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── SCREENS ─── */
+.screen { position: relative; z-index: 1; min-height: 100vh; }
+
+/* ═══════════════════════════════════════════
+   LANDING / MARKETING
+═══════════════════════════════════════════ */
+#screen-landing {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px 20px; text-align: center; gap: 32px;
+}
+.landing-logo {
+  display: inline-flex; align-items: center; gap: 12px;
+  font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800;
+}
+.logo-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.landing-badge {
+  background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.3);
+  color: var(--accent); padding: 6px 16px; border-radius: 99px; font-size: 13px; font-weight: 600;
+}
+.landing-title { font-size: clamp(36px,6vw,64px); font-weight: 800; line-height: 1.1; max-width: 700px; }
+.landing-title span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.landing-sub { font-size: 18px; color: var(--text2); max-width: 500px; line-height: 1.6; }
+.landing-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.btn-primary {
+  padding: 14px 32px; background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; border-radius: 12px; color: #fff; font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700; cursor: pointer; transition: .2s;
+  box-shadow: 0 8px 32px rgba(79,142,247,0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(79,142,247,0.4); }
+.btn-outline {
+  padding: 14px 32px; background: transparent; border: 1px solid var(--border);
+  border-radius: 12px; color: var(--text); font-size: 15px; font-weight: 500;
+  cursor: pointer; transition: .2s;
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.landing-features {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap: 16px; max-width: 900px; width: 100%; margin-top: 16px;
+}
+.feature-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 24px; text-align: left; backdrop-filter: blur(10px);
+}
+.feature-icon { font-size: 28px; margin-bottom: 12px; }
+.feature-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.feature-card p { font-size: 13px; color: var(--text2); line-height: 1.5; }
+
+/* ═══════════════════════════════════════════
+   AUTH SCREEN (LOGIN / REGISTER)
+═══════════════════════════════════════════ */
+#screen-auth {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 40px 20px;
+}
+.auth-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; padding: 40px; width: 100%; max-width: 480px;
+  box-shadow: var(--glow);
+}
+.auth-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+.auth-logo .logo-icon { width: 36px; height: 36px; border-radius: 10px; font-size: 16px; }
+.auth-logo span { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
+.auth-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+.auth-tab {
+  padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+  border-bottom: 2px solid transparent; color: var(--text2); transition: .2s;
+}
+.auth-tab.active { border-bottom-color: var(--accent); color: var(--text); }
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+.form-input {
+  width: 100%; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif;
+  transition: .2s; outline: none;
+}
+.form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,142,247,0.1); }
+.form-select {
+  width: 100%; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: 14px; outline: none; cursor: pointer;
+}
+.form-select:focus { border-color: var(--accent); }
+.btn-full {
+  width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; border-radius: 12px; color: #fff; font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700; cursor: pointer; transition: .2s; margin-top: 8px;
+}
+.btn-full:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-full:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.auth-footer { text-align: center; margin-top: 24px; font-size: 13px; color: var(--text2); }
+.auth-footer a { color: var(--accent); cursor: pointer; text-decoration: none; }
+
+/* ═══════════════════════════════════════════
+   MAIN APP LAYOUT
+═══════════════════════════════════════════ */
+#screen-app { display: flex; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 260px; background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; padding: 24px 0; position: sticky; top: 0;
+  height: 100vh; overflow-y: auto; flex-shrink: 0;
+}
+.sidebar-logo {
+  display: flex; align-items: center; gap: 10px; padding: 0 20px 24px;
+  border-bottom: 1px solid var(--border); margin-bottom: 16px;
+}
+.sidebar-logo .logo-icon { width: 32px; height: 32px; border-radius: 9px; font-size: 14px; }
+.sidebar-logo span { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800; }
+.sidebar-company {
+  margin: 0 12px 16px; padding: 12px 14px;
+  background: rgba(79,142,247,0.08); border: 1px solid rgba(79,142,247,0.2);
+  border-radius: 12px;
+}
+.sidebar-company .company-name { font-size: 13px; font-weight: 700; color: var(--accent); }
+.sidebar-company .company-plan {
+  font-size: 11px; color: var(--text2); margin-top: 2px;
+  display: flex; align-items: center; gap: 4px;
+}
+.plan-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+.sidebar-section { padding: 0 12px; margin-bottom: 4px; }
+.sidebar-section-label {
+  font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;
+  letter-spacing: .08em; padding: 8px 8px 4px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px;
+  cursor: pointer; transition: .15s; font-size: 14px; font-weight: 500; color: var(--text2);
+}
+.nav-item:hover { background: var(--card); color: var(--text); }
+.nav-item.active { background: rgba(79,142,247,0.12); color: var(--accent); font-weight: 600; }
+.nav-item .nav-icon { font-size: 17px; width: 22px; text-align: center; }
+.nav-badge {
+  margin-left: auto; background: var(--accent); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px;
+}
+.sidebar-footer {
+  margin-top: auto; padding: 16px 12px 0; border-top: 1px solid var(--border);
+}
+.user-card {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: var(--card); border-radius: 12px; cursor: pointer; transition: .15s;
+}
+.user-card:hover { background: rgba(255,255,255,0.06); }
+.avatar {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.user-info .user-name { font-size: 13px; font-weight: 600; }
+.user-info .user-role { font-size: 11px; color: var(--text2); }
+.btn-logout {
+  margin-left: auto; padding: 5px 10px; background: transparent;
+  border: 1px solid var(--border); border-radius: 8px; color: var(--text2);
+  font-size: 12px; cursor: pointer; transition: .15s;
+}
+.btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+/* MAIN CONTENT */
+.main-content {
+  flex: 1; padding: 32px; overflow-y: auto; background: var(--bg);
+}
+.page-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
+}
+.page-title { font-size: 26px; font-weight: 800; }
+.page-subtitle { font-size: 14px; color: var(--text2); margin-top: 4px; }
+.header-actions { display: flex; gap: 10px; align-items: center; }
+
+/* CARDS */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px;
+}
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px; transition: .2s;
+}
+.stat-card:hover { border-color: rgba(79,142,247,0.3); transform: translateY(-2px); }
+.stat-label { font-size: 12px; color: var(--text2); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.stat-value { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; margin: 8px 0 4px; }
+.stat-change { font-size: 12px; display: flex; align-items: center; gap: 4px; }
+
+/* BUTTONS */
+.btn {
+  padding: 9px 18px; border-radius: 9px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none; transition: .2s; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-blue  { background: var(--accent); color: #fff; }
+.btn-blue:hover { opacity: 0.85; }
+.btn-green { background: var(--success); color: #111; }
+.btn-green:hover { opacity: 0.85; }
+.btn-red   { background: var(--danger); color: #fff; }
+.btn-red:hover { opacity: 0.85; }
+.btn-ghost { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-warning { background: var(--warning); color: #111; }
+
+/* TABLE */
+.table-wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  padding: 10px 14px; font-size: 11px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border);
+  text-align: left; white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: .15s; }
+tbody tr:hover { background: var(--card); }
+tbody td { padding: 12px 14px; font-size: 13px; color: var(--text2); }
+tbody td:first-child { color: var(--text); font-weight: 500; }
+
+/* BADGES */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600;
+}
+.badge-green  { background: rgba(34,211,165,0.12); color: var(--success); }
+.badge-blue   { background: rgba(79,142,247,0.12);  color: var(--accent); }
+.badge-red    { background: rgba(239,68,68,0.12);   color: var(--danger); }
+.badge-yellow { background: rgba(245,158,11,0.12);  color: var(--warning); }
+.badge-gray   { background: rgba(255,255,255,0.06); color: var(--text2); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  backdrop-filter: blur(4px);
+}
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+  padding: 32px; width: 100%; max-width: 560px; max-height: 90vh;
+  overflow-y: auto; box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+  animation: modalIn .25s ease;
+}
+.modal-lg { max-width: 720px; }
+@keyframes modalIn { from { transform: scale(.95); opacity:0; } to { transform: scale(1); opacity:1; } }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.modal-title { font-size: 18px; font-weight: 800; }
+.modal-close { background: none; border: none; color: var(--text2); font-size: 22px; cursor: pointer; }
+.modal-close:hover { color: var(--text); }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+/* SEARCH */
+.search-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 14px; width: 280px;
+}
+.search-bar input {
+  background: none; border: none; color: var(--text); font-size: 13px;
+  outline: none; flex: 1; font-family: 'DM Sans', sans-serif;
+}
+.search-bar input::placeholder { color: var(--text3); }
+
+/* PROGRESS */
+.progress-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; transition: width .3s; }
+
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 60px 20px; }
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: .4; }
+.empty-state h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.empty-state p { font-size: 13px; color: var(--text2); }
+
+/* ═══════════════════════════════════════════
+   SUPER ADMIN
+═══════════════════════════════════════════ */
+.superadmin-banner {
+  background: linear-gradient(135deg, rgba(124,90,247,0.15), rgba(79,142,247,0.1));
+  border: 1px solid rgba(124,90,247,0.3); border-radius: 12px;
+  padding: 12px 20px; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 10px; font-size: 13px;
+}
+.superadmin-banner span:first-child { font-size: 18px; }
+.superadmin-banner strong { color: var(--accent2); }
+.company-row-actions { display: flex; gap: 6px; }
+
+/* ONBOARDING STEPS */
+.steps-indicator { display: flex; align-items: center; gap: 0; margin-bottom: 32px; }
+.step-item {
+  flex: 1; display: flex; align-items: center; gap: 0;
+}
+.step-circle {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--border); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--text3); flex-shrink: 0; transition: .2s;
+}
+.step-circle.active  { border-color: var(--accent); color: var(--accent); background: rgba(79,142,247,0.1); }
+.step-circle.done    { border-color: var(--success); background: var(--success); color: #111; }
+.step-label { font-size: 11px; color: var(--text3); margin-top: 4px; white-space: nowrap; }
+.step-line { flex: 1; height: 1px; background: var(--border); }
+.step-line.done { background: var(--success); }
+
+/* PLAN CARDS */
+.plan-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin: 24px 0; }
+.plan-card {
+  border: 2px solid var(--border); border-radius: 16px; padding: 24px;
+  cursor: pointer; transition: .2s; position: relative;
+}
+.plan-card:hover { border-color: var(--accent); }
+.plan-card.selected { border-color: var(--accent); background: rgba(79,142,247,0.06); }
+.plan-name { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+.plan-price { font-size: 24px; font-weight: 800; color: var(--accent); margin: 8px 0; }
+.plan-price span { font-size: 13px; font-weight: 400; color: var(--text2); }
+.plan-features { font-size: 12px; color: var(--text2); line-height: 1.7; }
+.plan-badge-popular {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: #fff; font-size: 10px; font-weight: 700;
+  padding: 3px 12px; border-radius: 99px; white-space: nowrap;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .sidebar { width: 220px; }
+  .main-content { padding: 20px; }
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+  .plan-cards { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .sidebar { display: none; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div id="toast-container"></div>
+
+<!-- LOADER -->
+<div id="global-loader">
+  <div class="spinner"></div>
+  <span style="font-size:13px;color:var(--text2);">Chargement de RHSMART AXIS…</span>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN : LANDING
+══════════════════════════════════════ -->
+<div id="screen-landing" class="screen hidden">
+  <div class="landing-logo">
+    <div class="logo-icon">🚀</div>
+    RHSMART AXIS
+  </div>
+  <div class="landing-badge">✨ Plateforme RH Multi-Tenant SaaS</div>
+  <h1 class="landing-title">La RH <span>intelligente</span><br/>pour votre entreprise</h1>
+  <p class="landing-sub">Gérez vos employés, congés, bulletins et évaluations depuis une seule plateforme. Sécurisée, rapide, et taillée pour le Bénin.</p>
+  <div class="landing-actions">
+    <button class="btn-primary" onclick="showScreen('auth', 'register')">Créer votre espace 🎯</button>
+    <button class="btn-outline" onclick="showScreen('auth', 'login')">Se connecter</button>
+  </div>
+  <div class="landing-features">
+    <div class="feature-card">
+      <div class="feature-icon">👥</div>
+      <h3>Gestion des employés</h3>
+      <p>Fiches complètes, historique carrière, mutations et sanctions.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Évaluations & Objectifs</h3>
+      <p>Suivi des performances avec notation et feedback continu.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏖️</div>
+      <h3>Congés automatiques</h3>
+      <p>Soldes calculés en temps réel, approbations en un clic.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💳</div>
+      <h3>Bulletins de paie</h3>
+      <p>Export PDF et partage WhatsApp direct depuis la plateforme.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Multi-Tenant Sécurisé</h3>
+      <p>Données isolées par entreprise avec RLS Supabase.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <h3>Self-Service Employé</h3>
+      <p>Portail personnel pour consulter fiches de paie et congés.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN : AUTH (LOGIN / REGISTER)
+══════════════════════════════════════ -->
+<div id="screen-auth" class="screen hidden">
+  <div style="position:absolute;top:20px;left:20px;cursor:pointer" onclick="showScreen('landing')" class="btn btn-ghost btn-sm">← Retour</div>
+
+  <!-- LOGIN -->
+  <div id="auth-login" class="hidden" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">🚀</div>
+        <span>RHSMART AXIS</span>
+      </div>
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchAuthTab('login')">Connexion</div>
+        <div class="auth-tab" onclick="switchAuthTab('register')">Inscription</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="login-email" class="form-input" placeholder="vous@entreprise.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input type="password" id="login-password" class="form-input" placeholder="••••••••"/>
+      </div>
+      <button class="btn-full" id="btn-login" onclick="handleLogin()">Se connecter →</button>
+      <div class="auth-footer">
+        Pas de compte ? <a onclick="switchAuthTab('register')">Créer votre espace entreprise</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER (ONBOARDING MULTI-ÉTAPES) -->
+  <div id="auth-register" class="hidden" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px">
+    <div class="auth-card" style="max-width:560px">
+      <div class="auth-logo">
+        <div class="logo-icon">🚀</div>
+        <span>RHSMART AXIS</span>
+      </div>
+      <div class="auth-tabs">
+        <div class="auth-tab" onclick="switchAuthTab('login')">Connexion</div>
+        <div class="auth-tab active" onclick="switchAuthTab('register')">Inscription</div>
+      </div>
+
+      <!-- Étapes -->
+      <div class="steps-indicator" id="reg-steps">
+        <div class="step-item">
+          <div class="step-circle active" id="step-c-1">1</div>
+        </div>
+        <div class="step-line" id="line-1-2"></div>
+        <div class="step-item">
+          <div class="step-circle" id="step-c-2">2</div>
+        </div>
+        <div class="step-line" id="line-2-3"></div>
+        <div class="step-item">
+          <div class="step-circle" id="step-c-3">3</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:-20px;margin-bottom:28px;">
+        <span class="step-label" style="color:var(--accent)">Entreprise</span>
+        <span class="step-label" id="step-l-2" style="margin-right:8px">Formule</span>
+        <span class="step-label" id="step-l-3">Compte Admin</span>
+      </div>
+
+      <!-- ÉTAPE 1 : Info Entreprise -->
+      <div id="reg-step-1">
+        <h3 style="font-size:18px;font-weight:800;margin-bottom:20px">Votre entreprise</h3>
+        <div class="form-group">
+          <label class="form-label">Nom de l'entreprise *</label>
+          <input type="text" id="reg-company-name" class="form-input" placeholder="Ex: SONAPRA, MTN Bénin…"/>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Secteur</label>
+            <select id="reg-sector" class="form-select">
+              <option value="">-- Sélectionner --</option>
+              <option>Télécommunications</option><option>Agriculture</option>
+              <option>Finance / Banque</option><option>Commerce</option>
+              <option>Industrie</option><option>ONG / Association</option>
+              <option>Administration publique</option><option>Santé</option><option>Autre</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Taille</label>
+            <select id="reg-size" class="form-select">
+              <option value="1-10">1 – 10 employés</option>
+              <option value="11-50">11 – 50 employés</option>
+              <option value="51-200">51 – 200 employés</option>
+              <option value="201+">201+ employés</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ville / Pays</label>
+          <input type="text" id="reg-city" class="form-input" placeholder="Cotonou, Bénin"/>
+        </div>
+        <button class="btn-full" onclick="regNextStep(2)">Continuer →</button>
+      </div>
+
+      <!-- ÉTAPE 2 : Formule -->
+      <div id="reg-step-2" class="hidden">
+        <h3 style="font-size:18px;font-weight:800;margin-bottom:8px">Choisissez votre formule</h3>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Essai gratuit 30 jours sur tous les plans.</p>
+        <div class="plan-cards">
+          <div class="plan-card" id="plan-starter" onclick="selectPlan('starter')">
+            <div class="plan-name">Starter</div>
+            <div class="plan-price">5 000 <span>FCFA/mois</span></div>
+            <div class="plan-features">✓ Jusqu'à 20 employés<br/>✓ Congés & Bulletins<br/>✓ Support email</div>
+          </div>
+          <div class="plan-card" id="plan-pro" onclick="selectPlan('pro')">
+            <div class="plan-badge-popular">⭐ Populaire</div>
+            <div class="plan-name">Pro</div>
+            <div class="plan-price">15 000 <span>FCFA/mois</span></div>
+            <div class="plan-features">✓ Jusqu'à 100 employés<br/>✓ Évaluations & Objectifs<br/>✓ Export WhatsApp/PDF<br/>✓ Support prioritaire</div>
+          </div>
+          <div class="plan-card" id="plan-enterprise" onclick="selectPlan('enterprise')">
+            <div class="plan-name">Enterprise</div>
+            <div class="plan-price">Sur devis</div>
+            <div class="plan-features">✓ Employés illimités<br/>✓ Multi-sites<br/>✓ API & Intégrations<br/>✓ Gestionnaire dédié</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="btn btn-ghost w-full" onclick="regNextStep(1)">← Retour</button>
+          <button class="btn-full" style="margin-top:0" onclick="regNextStep(3)">Continuer →</button>
+        </div>
+      </div>
+
+      <!-- ÉTAPE 3 : Compte Admin -->
+      <div id="reg-step-3" class="hidden">
+        <h3 style="font-size:18px;font-weight:800;margin-bottom:20px">Créer votre compte admin</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Prénom *</label>
+            <input type="text" id="reg-firstname" class="form-input" placeholder="Jean"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nom *</label>
+            <input type="text" id="reg-lastname" class="form-input" placeholder="Dupont"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input type="email" id="reg-email" class="form-input" placeholder="admin@entreprise.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mot de passe *</label>
+          <input type="password" id="reg-password" class="form-input" placeholder="Minimum 8 caractères"/>
+        </div>
+        <div style="background:rgba(34,211,165,0.05);border:1px solid rgba(34,211,165,0.2);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--text2);margin-bottom:20px">
+          🔒 Vos données sont isolées dans votre espace privé. Aucun accès extérieur possible.
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost w-full" onclick="regNextStep(2)">← Retour</button>
+          <button class="btn-full" style="margin-top:0" id="btn-register" onclick="handleRegister()">Créer mon espace 🎉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN : APP
+══════════════════════════════════════ -->
+<div id="screen-app" class="screen hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="app-sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🚀</div>
+      <span>RHSMART AXIS</span>
+    </div>
+    <div class="sidebar-company">
+      <div class="company-name" id="sb-company-name">—</div>
+      <div class="company-plan"><span class="plan-dot"></span><span id="sb-company-plan">Plan Pro</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Principal</div>
+      <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
+        <span class="nav-icon">📊</span> Tableau de bord
+      </div>
+      <div class="nav-item" onclick="navigate('employees')" id="nav-employees">
+        <span class="nav-icon">👥</span> Employés
+        <span class="nav-badge" id="nb-employees">0</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Modules RH</div>
+      <div class="nav-item" onclick="navigate('leaves')" id="nav-leaves">
+        <span class="nav-icon">🏖️</span> Congés
+        <span class="nav-badge" id="nb-leaves" style="background:var(--warning);color:#111">0</span>
+      </div>
+      <div class="nav-item" onclick="navigate('payroll')" id="nav-payroll">
+        <span class="nav-icon">💳</span> Bulletins de paie
+      </div>
+      <div class="nav-item" onclick="navigate('evaluations')" id="nav-evaluations">
+        <span class="nav-icon">⭐</span> Évaluations
+      </div>
+      <div class="nav-item" onclick="navigate('documents')" id="nav-documents">
+        <span class="nav-icon">📁</span> Documents
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Accès</div>
+      <div class="nav-item" onclick="navigate('selfservice')" id="nav-selfservice">
+        <span class="nav-icon">👤</span> Self-Service
+      </div>
+      <div class="nav-item" onclick="navigate('settings')" id="nav-settings">
+        <span class="nav-icon">⚙️</span> Paramètres
+      </div>
+      <!-- Super Admin seulement -->
+      <div class="nav-item hidden" onclick="navigate('superadmin')" id="nav-superadmin" style="color:var(--accent2)">
+        <span class="nav-icon">🛡️</span> Super Admin
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar" id="sb-avatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sb-username">—</div>
+          <div class="user-role" id="sb-userrole">—</div>
+        </div>
+        <button class="btn-logout" onclick="handleLogout()">↩</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- PAGE: DASHBOARD -->
+    <div id="page-dashboard" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Tableau de bord</h1>
+          <p class="page-subtitle" id="dash-subtitle">Bienvenue dans votre espace RH</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-blue" onclick="navigate('employees'); openAddEmployee()">+ Ajouter un employé</button>
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-label">Employés actifs</div>
+          <div class="stat-value text-accent" id="stat-employees">0</div>
+          <div class="stat-change text-muted">↑ Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Congés en attente</div>
+          <div class="stat-value text-warning" id="stat-leaves">0</div>
+          <div class="stat-change text-muted">À approuver</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Bulletins ce mois</div>
+          <div class="stat-value text-success" id="stat-payslips">0</div>
+          <div class="stat-change text-muted">Générés</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Évaluations</div>
+          <div class="stat-value" id="stat-evals">0</div>
+          <div class="stat-change text-muted">Total</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">👥 Derniers employés ajoutés</div>
+          <div id="dash-recent-employees">
+            <div class="empty-state"><div class="empty-icon">👥</div><p>Aucun employé encore</p></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🏖️ Demandes de congés récentes</div>
+          <div id="dash-recent-leaves">
+            <div class="empty-state"><div class="empty-icon">🏖️</div><p>Aucune demande</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: EMPLOYEES -->
+    <div id="page-employees" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Gestion des Employés</h1>
+          <p class="page-subtitle">Base de données RH de votre entreprise</p>
+        </div>
+        <div class="header-actions">
+          <div class="search-bar">
+            <span>🔍</span>
+            <input type="text" id="emp-search" placeholder="Rechercher un employé…" oninput="filterEmployees()"/>
+          </div>
+          <button class="btn btn-blue" onclick="openAddEmployee()">+ Ajouter</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Employé</th><th>Poste</th><th>Département</th>
+                <th>Date d'embauche</th><th>Statut</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="employees-table-body">
+              <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div><p>Chargement…</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: LEAVES -->
+    <div id="page-leaves" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Gestion des Congés</h1>
+          <p class="page-subtitle">Demandes, approbations et soldes</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-blue" onclick="openAddLeave()">+ Nouvelle demande</button>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-label">En attente</div>
+          <div class="stat-value text-warning" id="leaves-pending">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Approuvés</div>
+          <div class="stat-value text-success" id="leaves-approved">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Refusés</div>
+          <div class="stat-value text-danger" id="leaves-rejected">0</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Employé</th><th>Type</th><th>Du</th><th>Au</th><th>Jours</th><th>Statut</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="leaves-table-body">
+              <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🏖️</div><p>Aucune demande</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: PAYROLL -->
+    <div id="page-payroll" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Bulletins de Paie</h1>
+          <p class="page-subtitle">Génération et export des fiches de paie</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-blue" onclick="openGeneratePayslip()">+ Générer bulletin</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Employé</th><th>Mois/Année</th><th>Salaire brut</th><th>Net à payer</th><th>Statut</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="payroll-table-body">
+              <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">💳</div><p>Aucun bulletin généré</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: EVALUATIONS -->
+    <div id="page-evaluations" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Évaluations des Performances</h1>
+          <p class="page-subtitle">Objectifs, notation et feedback</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-blue" onclick="openAddEvaluation()">+ Nouvelle évaluation</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Employé</th><th>Période</th><th>Note</th><th>Objectifs atteints</th><th>Commentaire</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="evals-table-body">
+              <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">⭐</div><p>Aucune évaluation</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: DOCUMENTS -->
+    <div id="page-documents" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Documents & Pièces jointes</h1>
+          <p class="page-subtitle">Contrats, diplômes et documents RH</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-blue" onclick="openUploadDoc()">⬆️ Uploader un document</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-icon">📁</div>
+          <h3>Aucun document</h3>
+          <p>Uploadez des contrats, diplômes et documents RH pour les retrouver facilement.</p>
+          <button class="btn btn-blue" style="margin-top:16px" onclick="openUploadDoc()">+ Upload</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: SELF-SERVICE -->
+    <div id="page-selfservice" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Portail Self-Service</h1>
+          <p class="page-subtitle">Accès direct pour les employés</p>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card" style="cursor:pointer;transition:.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onclick="navigate('leaves')">
+          <div style="font-size:36px;margin-bottom:12px">🏖️</div>
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">Mes Congés</h3>
+          <p class="text-sm text-muted">Consulter mon solde, faire une demande de congé.</p>
+        </div>
+        <div class="card" style="cursor:pointer;transition:.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onclick="navigate('payroll')">
+          <div style="font-size:36px;margin-bottom:12px">💳</div>
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">Mes Bulletins</h3>
+          <p class="text-sm text-muted">Télécharger mes fiches de paie en PDF.</p>
+        </div>
+        <div class="card" style="cursor:pointer;transition:.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onclick="navigate('documents')">
+          <div style="font-size:36px;margin-bottom:12px">📁</div>
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">Mes Documents</h3>
+          <p class="text-sm text-muted">Accéder à mon contrat, diplômes, attestations.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: SETTINGS -->
+    <div id="page-settings" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Paramètres</h1>
+          <p class="page-subtitle">Configuration de votre espace entreprise</p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">🏢 Informations entreprise</div>
+          <div class="form-group">
+            <label class="form-label">Nom de l'entreprise</label>
+            <input type="text" id="settings-company-name" class="form-input"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Secteur</label>
+            <input type="text" id="settings-sector" class="form-input"/>
+          </div>
+          <button class="btn btn-blue" onclick="saveSettings()">💾 Sauvegarder</button>
+        </div>
+        <div class="card">
+          <div class="card-title">👤 Mon compte</div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="settings-email" class="form-input" readonly style="opacity:.5"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nouveau mot de passe</label>
+            <input type="password" id="settings-password" class="form-input" placeholder="Laisser vide pour ne pas changer"/>
+          </div>
+          <button class="btn btn-ghost" onclick="updatePassword()">🔑 Changer le mot de passe</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: SUPER ADMIN -->
+    <div id="page-superadmin" class="page hidden">
+      <div class="superadmin-banner">
+        <span>🛡️</span>
+        <div>Mode <strong>Super Administrateur</strong> — Accès à toutes les entreprises de la plateforme</div>
+      </div>
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Gestion des Clients</h1>
+          <p class="page-subtitle">Toutes les entreprises inscrites sur RHSMART AXIS</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-blue" onclick="loadAllCompanies()">🔄 Rafraîchir</button>
+        </div>
+      </div>
+      <div class="grid-4" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-label">Entreprises</div>
+          <div class="stat-value text-accent" id="sa-total-companies">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Employés totaux</div>
+          <div class="stat-value text-success" id="sa-total-employees">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Plans Pro</div>
+          <div class="stat-value text-warning" id="sa-pro-plans">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Inscrits ce mois</div>
+          <div class="stat-value" id="sa-this-month">0</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 Toutes les entreprises</div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Entreprise</th><th>Plan</th><th>Employés</th><th>Admin</th><th>Inscrit le</th><th>Statut</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="companies-table-body">
+              <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🏢</div><p>Chargement…</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODALS
+══════════════════════════════════════ -->
+
+<!-- MODAL ADD EMPLOYEE -->
+<div id="modal-add-employee" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">👤 Ajouter un employé</h2>
+      <button class="modal-close" onclick="closeModal('modal-add-employee')">✕</button>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Prénom *</label>
+        <input type="text" id="emp-firstname" class="form-input" placeholder="Jean"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nom *</label>
+        <input type="text" id="emp-lastname" class="form-input" placeholder="Dupont"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" id="emp-email" class="form-input" placeholder="jean@entreprise.com"/>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Poste *</label>
+        <input type="text" id="emp-position" class="form-input" placeholder="Directeur Commercial"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Département</label>
+        <input type="text" id="emp-dept" class="form-input" placeholder="Commercial"/>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Date d'embauche</label>
+        <input type="date" id="emp-hire-date" class="form-input"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Salaire brut (FCFA)</label>
+        <input type="number" id="emp-salary" class="form-input" placeholder="150000"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Téléphone</label>
+      <input type="text" id="emp-phone" class="form-input" placeholder="+229 97 00 00 00"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-employee')">Annuler</button>
+      <button class="btn btn-blue" onclick="saveEmployee()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADD LEAVE -->
+<div id="modal-add-leave" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">🏖️ Nouvelle demande de congé</h2>
+      <button class="modal-close" onclick="closeModal('modal-add-leave')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Employé *</label>
+      <select id="leave-employee" class="form-select"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type de congé</label>
+      <select id="leave-type" class="form-select">
+        <option>Congé annuel</option><option>Maladie</option>
+        <option>Maternité / Paternité</option><option>Exceptionnel</option><option>Sans solde</option>
+      </select>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Date de début *</label>
+        <input type="date" id="leave-start" class="form-input"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date de fin *</label>
+        <input type="date" id="leave-end" class="form-input"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Motif</label>
+      <textarea id="leave-reason" class="form-input" rows="3" placeholder="Motif de la demande…" style="resize:vertical"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-leave')">Annuler</button>
+      <button class="btn btn-blue" onclick="saveLeave()">📤 Soumettre</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GENERATE PAYSLIP -->
+<div id="modal-generate-payslip" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">💳 Générer un bulletin de paie</h2>
+      <button class="modal-close" onclick="closeModal('modal-generate-payslip')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Employé *</label>
+      <select id="payslip-employee" class="form-select"></select>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Mois</label>
+        <select id="payslip-month" class="form-select">
+          <option value="1">Janvier</option><option value="2">Février</option><option value="3">Mars</option>
+          <option value="4">Avril</option><option value="5">Mai</option><option value="6">Juin</option>
+          <option value="7">Juillet</option><option value="8">Août</option><option value="9">Septembre</option>
+          <option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Décembre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Année</label>
+        <input type="number" id="payslip-year" class="form-input" value="2025"/>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Salaire brut (FCFA)</label>
+        <input type="number" id="payslip-gross" class="form-input" placeholder="150000"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Déductions (FCFA)</label>
+        <input type="number" id="payslip-deductions" class="form-input" placeholder="0" value="0"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-generate-payslip')">Annuler</button>
+      <button class="btn btn-blue" onclick="savePayslip()">🖨️ Générer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADD EVALUATION -->
+<div id="modal-add-evaluation" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">⭐ Nouvelle évaluation</h2>
+      <button class="modal-close" onclick="closeModal('modal-add-evaluation')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Employé *</label>
+      <select id="eval-employee" class="form-select"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Période</label>
+      <input type="text" id="eval-period" class="form-input" placeholder="Ex: T1 2025, Annuel 2024"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Note globale (1-10)</label>
+      <input type="number" id="eval-score" class="form-input" min="1" max="10" placeholder="8"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Objectifs atteints (%)</label>
+      <input type="number" id="eval-objectives" class="form-input" min="0" max="100" placeholder="75"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Commentaire / Feedback</label>
+      <textarea id="eval-comment" class="form-input" rows="3" style="resize:vertical" placeholder="Observations et recommandations…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-evaluation')">Annuler</button>
+      <button class="btn btn-blue" onclick="saveEvaluation()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+// ─── SUPABASE INIT ───
+const SUPABASE_URL = 'https://your-project.supabase.co'; // ← À remplacer
+const SUPABASE_ANON = 'your-anon-key';                   // ← À remplacer
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ─── GLOBAL STATE ───
+let currentUser   = null;
+let currentCompany = null;
+let currentRole   = null; // 'superadmin' | 'admin' | 'employee'
+let employees     = [];
+let regStep       = 1;
+let selectedPlan  = 'pro';
+
+// ─── TOAST ───
+function toast(msg, type = 'info', duration = 3500) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), duration);
+}
+
+// ─── SCREENS ───
+function showScreen(name, subview) {
+  ['landing','auth','app'].forEach(s => {
+    document.getElementById(`screen-${s}`).classList.add('hidden');
+  });
+  document.getElementById(`screen-${name}`).classList.remove('hidden');
+  if (name === 'auth') {
+    switchAuthTab(subview || 'login');
+  }
+}
+
+// ─── AUTH TABS ───
+function switchAuthTab(tab) {
+  ['login','register'].forEach(t => {
+    document.getElementById(`auth-${t}`).classList.add('hidden');
+  });
+  document.getElementById(`auth-${tab}`).classList.remove('hidden');
+  document.querySelectorAll('.auth-tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+  });
+  if (tab === 'register') regGoToStep(1);
+}
+
+// ─── REGISTER STEPS ───
+function regGoToStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById(`reg-step-${i}`).classList.toggle('hidden', i !== n);
+    const circle = document.getElementById(`step-c-${i}`);
+    circle.classList.remove('active','done');
+    if (i < n) circle.classList.add('done'), circle.textContent = '✓';
+    else if (i === n) circle.classList.add('active'), circle.textContent = i;
+    else circle.textContent = i;
+  });
+  [1,2].forEach(i => {
+    const line = document.getElementById(`line-${i}-${i+1}`);
+    if (line) line.classList.toggle('done', n > i);
+  });
+  regStep = n;
+}
+
+function regNextStep(n) {
+  if (n === 2 && !document.getElementById('reg-company-name').value.trim()) {
+    toast('Veuillez renseigner le nom de votre entreprise', 'error'); return;
+  }
+  if (n === 3 && !selectedPlan) {
+    toast('Choisissez une formule', 'error'); return;
+  }
+  regGoToStep(n);
+}
+
+function selectPlan(plan) {
+  selectedPlan = plan;
+  ['starter','pro','enterprise'].forEach(p => {
+    document.getElementById(`plan-${p}`).classList.toggle('selected', p === plan);
+  });
+}
+
+// ─── LOGIN ───
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  if (!email || !pass) { toast('Remplissez tous les champs', 'error'); return; }
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
+    await loadUserContext(data.user);
+  } catch(e) {
+    toast(e.message || 'Erreur de connexion', 'error');
+  } finally { btn.disabled = false; btn.textContent = 'Se connecter →'; }
+}
+
+// ─── REGISTER ───
+async function handleRegister() {
+  const firstName = document.getElementById('reg-firstname').value.trim();
+  const lastName  = document.getElementById('reg-lastname').value.trim();
+  const email     = document.getElementById('reg-email').value.trim();
+  const pass      = document.getElementById('reg-password').value;
+  const companyName = document.getElementById('reg-company-name').value.trim();
+  const sector    = document.getElementById('reg-sector').value;
+  const size      = document.getElementById('reg-size').value;
+  const city      = document.getElementById('reg-city').value.trim();
+
+  if (!firstName || !lastName || !email || !pass || !companyName) {
+    toast('Remplissez tous les champs obligatoires (*)', 'error'); return;
+  }
+  if (pass.length < 8) { toast('Mot de passe minimum 8 caractères', 'error'); return; }
+
+  const btn = document.getElementById('btn-register');
+  btn.disabled = true; btn.textContent = 'Création en cours…';
+
+  try {
+    // 1. Créer le compte Supabase Auth
+    const { data: authData, error: authError } = await sb.auth.signUp({ email, password: pass });
+    if (authError) throw authError;
+    const userId = authData.user.id;
+
+    // 2. Créer l'entreprise dans la table companies
+    const { data: compData, error: compError } = await sb.from('companies').insert({
+      name: companyName, sector, size, city,
+      plan: selectedPlan, admin_id: userId,
+      created_at: new Date().toISOString()
+    }).select().single();
+    if (compError) throw compError;
+    const companyId = compData.id;
+
+    // 3. Créer le profil utilisateur
+    const { error: profError } = await sb.from('profiles').upsert({
+      id: userId, first_name: firstName, last_name: lastName,
+      email, role: 'admin', company_id: companyId
+    });
+    if (profError) throw profError;
+
+    toast(`🎉 Espace "${companyName}" créé ! Vérifiez votre email.`, 'success', 6000);
+    setTimeout(() => switchAuthTab('login'), 2000);
+  } catch(e) {
+    toast(e.message || 'Erreur lors de l\'inscription', 'error');
+  } finally { btn.disabled = false; btn.textContent = 'Créer mon espace 🎉'; }
+}
+
+// ─── LOAD USER CONTEXT ───
+async function loadUserContext(user) {
+  try {
+    // Chercher le profil (role, company)
+    let { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+    
+    if (!profile) {
+      // Fallback: check if superadmin by email
+      if (user.email === 'superadmin@rhsmartaxis.com') {
+        currentUser = user; currentRole = 'superadmin'; currentCompany = null;
+        renderApp();
+        return;
+      }
+      toast('Profil introuvable. Contactez l\'administrateur.', 'error');
+      return;
+    }
+
+    currentUser    = { ...user, ...profile };
+    currentRole    = profile.role || 'employee';
+    
+    if (profile.company_id) {
+      const { data: company } = await sb.from('companies').select('*').eq('id', profile.company_id).single();
+      currentCompany = company;
+    }
+    
+    renderApp();
+  } catch(e) {
+    console.error(e);
+    toast('Erreur lors du chargement du profil', 'error');
+  }
+}
+
+// ─── RENDER APP ───
+function renderApp() {
+  // Sidebar infos
+  const name = currentUser?.first_name 
+    ? `${currentUser.first_name} ${currentUser.last_name}` 
+    : currentUser?.email?.split('@')[0] || '?';
+  
+  document.getElementById('sb-username').textContent = name;
+  document.getElementById('sb-userrole').textContent = 
+    currentRole === 'superadmin' ? '🛡️ Super Admin' :
+    currentRole === 'admin'      ? '⚙️ Administrateur' : '👤 Employé';
+  document.getElementById('sb-avatar').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('sb-company-name').textContent = currentCompany?.name || 'RHSMART AXIS';
+  document.getElementById('sb-company-plan').textContent = 
+    currentCompany?.plan ? `Plan ${currentCompany.plan.charAt(0).toUpperCase() + currentCompany.plan.slice(1)}` : 'Plateforme';
+  document.getElementById('dash-subtitle').textContent = 
+    `Bienvenue, ${name.split(' ')[0]} ! Voici votre tableau de bord RH.`;
+
+  // Settings
+  if (document.getElementById('settings-email'))
+    document.getElementById('settings-email').value = currentUser?.email || '';
+  if (document.getElementById('settings-company-name') && currentCompany)
+    document.getElementById('settings-company-name').value = currentCompany.name || '';
+
+  // Super Admin nav
+  if (currentRole === 'superadmin')
+    document.getElementById('nav-superadmin').classList.remove('hidden');
+
+  showScreen('app');
+  navigate('dashboard');
+}
+
+// ─── NAVIGATE ───
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const p = document.getElementById(`page-${page}`);
+  const n = document.getElementById(`nav-${page}`);
+  if (p) p.classList.remove('hidden');
+  if (n) n.classList.add('active');
+  
+  if (page === 'dashboard')   loadDashboard();
+  if (page === 'employees')   loadEmployees();
+  if (page === 'leaves')      loadLeaves();
+  if (page === 'payroll')     loadPayroll();
+  if (page === 'evaluations') loadEvaluations();
+  if (page === 'superadmin')  loadAllCompanies();
+}
+
+// ─── DATA HELPERS ───
+function companyFilter() {
+  if (currentRole === 'superadmin') return {}; // no filter
+  return { company_id: currentCompany?.id };
+}
+
+// ─── DASHBOARD ───
+async function loadDashboard() {
+  try {
+    let empQ = sb.from('employees').select('*', { count: 'exact', head: true });
+    let lvQ  = sb.from('leaves').select('*', { count: 'exact', head: true }).eq('status','pending');
+    let payQ = sb.from('payslips').select('*', { count: 'exact', head: true });
+    let evQ  = sb.from('evaluations').select('*', { count: 'exact', head: true });
+    
+    if (currentCompany?.id) {
+      empQ = empQ.eq('company_id', currentCompany.id);
+      lvQ  = lvQ.eq('company_id', currentCompany.id);
+      payQ = payQ.eq('company_id', currentCompany.id);
+      evQ  = evQ.eq('company_id', currentCompany.id);
+    }
+    
+    const [e, l, p, ev] = await Promise.all([empQ, lvQ, payQ, evQ]);
+    
+    document.getElementById('stat-employees').textContent = e.count ?? 0;
+    document.getElementById('stat-leaves').textContent    = l.count ?? 0;
+    document.getElementById('stat-payslips').textContent  = p.count ?? 0;
+    document.getElementById('stat-evals').textContent     = ev.count ?? 0;
+    document.getElementById('nb-employees').textContent   = e.count ?? 0;
+    document.getElementById('nb-leaves').textContent      = l.count ?? 0;
+    
+    // Recent employees
+    let recEmpQ = sb.from('employees').select('*').order('created_at', { ascending: false }).limit(5);
+    if (currentCompany?.id) recEmpQ = recEmpQ.eq('company_id', currentCompany.id);
+    const { data: recEmps } = await recEmpQ;
+    
+    const empContainer = document.getElementById('dash-recent-employees');
+    if (recEmps && recEmps.length > 0) {
+      empContainer.innerHTML = recEmps.map(e => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div class="avatar" style="width:32px;height:32px;font-size:12px;border-radius:8px">${(e.first_name||'?').charAt(0)}</div>
+          <div>
+            <div style="font-size:13px;font-weight:600">${e.first_name||''} ${e.last_name||''}</div>
+            <div style="font-size:11px;color:var(--text2)">${e.position||'—'}</div>
+          </div>
+          <span class="badge badge-green" style="margin-left:auto">Actif</span>
+        </div>`).join('');
+    } else {
+      empContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>Aucun employé encore</p></div>';
+    }
+    
+    // Recent leaves
+    let recLvQ = sb.from('leaves').select('*, employees(first_name, last_name)').order('created_at', { ascending: false }).limit(5);
+    if (currentCompany?.id) recLvQ = recLvQ.eq('company_id', currentCompany.id);
+    const { data: recLvs } = await recLvQ;
+    
+    const lvContainer = document.getElementById('dash-recent-leaves');
+    if (recLvs && recLvs.length > 0) {
+      lvContainer.innerHTML = recLvs.map(l => {
+        const empName = l.employees ? `${l.employees.first_name||''} ${l.employees.last_name||''}` : 'Inconnu';
+        const badgeClass = l.status === 'approved' ? 'badge-green' : l.status === 'rejected' ? 'badge-red' : 'badge-yellow';
+        return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="flex:1"><div style="font-size:13px;font-weight:600">${empName}</div>
+          <div style="font-size:11px;color:var(--text2)">${l.type||'—'} · ${l.start_date||''}</div></div>
+          <span class="badge ${badgeClass}">${l.status||'pending'}</span>
+        </div>`;
+      }).join('');
+    } else {
+      lvContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🏖️</div><p>Aucune demande</p></div>';
+    }
+  } catch(e) { console.error(e); }
+}
+
+// ─── EMPLOYEES ───
+async function loadEmployees() {
+  try {
+    let q = sb.from('employees').select('*').order('created_at', { ascending: false });
+    if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
+    const { data, error } = await q;
+    if (error) throw error;
+    employees = data || [];
+    renderEmployeesTable(employees);
+  } catch(e) { console.error(e); toast('Erreur chargement employés', 'error'); }
+}
+
+function renderEmployeesTable(list) {
+  const tbody = document.getElementById('employees-table-body');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div><h3>Aucun employé</h3><p>Ajoutez votre premier employé.</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(e => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="width:32px;height:32px;font-size:12px;border-radius:8px">${(e.first_name||'?').charAt(0)}</div>
+          <div>
+            <div style="font-weight:600">${e.first_name||''} ${e.last_name||''}</div>
+            <div style="font-size:11px;color:var(--text2)">${e.email||''}</div>
+          </div>
+        </div>
+      </td>
+      <td>${e.position||'—'}</td>
+      <td>${e.department||'—'}</td>
+      <td>${e.hire_date ? new Date(e.hire_date).toLocaleDateString('fr-FR') : '—'}</td>
+      <td><span class="badge badge-green">Actif</span></td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-ghost" onclick="viewEmployee('${e.id}')">👁️</button>
+          <button class="btn btn-sm btn-red" onclick="deleteEmployee('${e.id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterEmployees() {
+  const q = document.getElementById('emp-search').value.toLowerCase();
+  const filtered = employees.filter(e =>
+    `${e.first_name} ${e.last_name} ${e.position} ${e.department}`.toLowerCase().includes(q)
+  );
+  renderEmployeesTable(filtered);
+}
+
+function viewEmployee(id) {
+  const emp = employees.find(e => e.id === id);
+  if (!emp) return;
+  toast(`${emp.first_name} ${emp.last_name} — ${emp.position||'—'}`, 'info');
+}
+
+async function deleteEmployee(id) {
+  if (!confirm('Supprimer cet employé ?')) return;
+  const { error } = await sb.from('employees').delete().eq('id', id);
+  if (error) { toast('Erreur suppression', 'error'); return; }
+  toast('Employé supprimé', 'success');
+  loadEmployees();
+}
+
+function openAddEmployee() {
+  ['emp-firstname','emp-lastname','emp-email','emp-position','emp-dept','emp-phone'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('modal-add-employee').classList.remove('hidden');
+}
+
+async function saveEmployee() {
+  const first = document.getElementById('emp-firstname').value.trim();
+  const last  = document.getElementById('emp-lastname').value.trim();
+  const pos   = document.getElementById('emp-position').value.trim();
+  if (!first || !last || !pos) { toast('Champs obligatoires manquants', 'error'); return; }
+  
+  const { error } = await sb.from('employees').insert({
+    first_name: first, last_name: last,
+    email: document.getElementById('emp-email').value.trim(),
+    position: pos,
+    department: document.getElementById('emp-dept').value.trim(),
+    hire_date: document.getElementById('emp-hire-date').value || null,
+    salary: parseFloat(document.getElementById('emp-salary').value) || null,
+    phone: document.getElementById('emp-phone').value.trim(),
+    company_id: currentCompany?.id,
+    status: 'active'
+  });
+  if (error) { toast('Erreur: ' + error.message, 'error'); return; }
+  toast('✅ Employé ajouté !', 'success');
+  closeModal('modal-add-employee');
+  loadEmployees();
+}
+
+// ─── LEAVES ───
+async function loadLeaves() {
+  try {
+    let q = sb.from('leaves').select('*, employees(first_name, last_name)').order('created_at', { ascending: false });
+    if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
+    const { data, error } = await q;
+    if (error) throw error;
+    const list = data || [];
+    
+    const pending  = list.filter(l => l.status === 'pending').length;
+    const approved = list.filter(l => l.status === 'approved').length;
+    const rejected = list.filter(l => l.status === 'rejected').length;
+    
+    document.getElementById('leaves-pending').textContent  = pending;
+    document.getElementById('leaves-approved').textContent = approved;
+    document.getElementById('leaves-rejected').textContent = rejected;
+    document.getElementById('nb-leaves').textContent       = pending;
+    
+    const tbody = document.getElementById('leaves-table-body');
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🏖️</div><p>Aucune demande de congé</p></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(l => {
+      const empName = l.employees ? `${l.employees.first_name||''} ${l.employees.last_name||''}` : '—';
+      const days = l.start_date && l.end_date ?
+        Math.ceil((new Date(l.end_date) - new Date(l.start_date)) / 86400000) + 1 : '—';
+      const badgeClass = l.status === 'approved' ? 'badge-green' : l.status === 'rejected' ? 'badge-red' : 'badge-yellow';
+      return `<tr>
+        <td>${empName}</td>
+        <td>${l.type||'—'}</td>
+        <td>${l.start_date ? new Date(l.start_date).toLocaleDateString('fr-FR') : '—'}</td>
+        <td>${l.end_date ? new Date(l.end_date).toLocaleDateString('fr-FR') : '—'}</td>
+        <td>${days}</td>
+        <td><span class="badge ${badgeClass}">${l.status||'pending'}</span></td>
+        <td>
+          ${l.status === 'pending' ? `
+            <button class="btn btn-sm btn-green" onclick="updateLeaveStatus('${l.id}','approved')">✓</button>
+            <button class="btn btn-sm btn-red" onclick="updateLeaveStatus('${l.id}','rejected')">✗</button>
+          ` : '<span class="text-muted text-sm">Traité</span>'}
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) { console.error(e); }
+}
+
+async function updateLeaveStatus(id, status) {
+  const { error } = await sb.from('leaves').update({ status }).eq('id', id);
+  if (error) { toast('Erreur', 'error'); return; }
+  toast(status === 'approved' ? '✅ Congé approuvé' : '❌ Congé refusé', status === 'approved' ? 'success' : 'error');
+  loadLeaves();
+}
+
+async function openAddLeave() {
+  // Charger les employés
+  let q = sb.from('employees').select('id, first_name, last_name');
+  if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
+  const { data } = await q;
+  const sel = document.getElementById('leave-employee');
+  sel.innerHTML = (data||[]).map(e => `<option value="${e.id}">${e.first_name} ${e.last_name}</option>`).join('');
+  document.getElementById('modal-add-leave').classList.remove('hidden');
+}
+
+async function saveLeave() {
+  const empId = document.getElementById('leave-employee').value;
+  const start = document.getElementById('leave-start').value;
+  const end   = document.getElementById('leave-end').value;
+  if (!empId || !start || !end) { toast('Remplissez les champs obligatoires', 'error'); return; }
+  
+  const { error } = await sb.from('leaves').insert({
+    employee_id: empId,
+    type: document.getElementById('leave-type').value,
+    start_date: start, end_date: end,
+    reason: document.getElementById('leave-reason').value,
+    status: 'pending',
+    company_id: currentCompany?.id
+  });
+  if (error) { toast('Erreur: ' + error.message, 'error'); return; }
+  toast('📤 Demande de congé soumise', 'success');
+  closeModal('modal-add-leave');
+  loadLeaves();
+}
+
+// ─── PAYROLL ───
+async function loadPayroll() {
+  try {
+    let q = sb.from('payslips').select('*, employees(first_name, last_name)').order('created_at', { ascending: false });
+    if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
+    const { data } = await q;
+    const list = data || [];
+    const tbody = document.getElementById('payroll-table-body');
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">💳</div><p>Aucun bulletin généré</p></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(p => {
+      const empName = p.employees ? `${p.employees.first_name} ${p.employees.last_name}` : '—';
+      const net = (p.gross_salary || 0) - (p.deductions || 0);
+      return `<tr>
+        <td>${empName}</td>
+        <td>${p.month||'—'}/${p.year||'—'}</td>
+        <td>${(p.gross_salary||0).toLocaleString('fr-FR')} FCFA</td>
+        <td style="color:var(--success);font-weight:700">${net.toLocaleString('fr-FR')} FCFA</td>
+        <td><span class="badge badge-green">Généré</span></td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm btn-ghost" onclick="exportPayslipPDF('${p.id}')">📄 PDF</button>
+            <button class="btn btn-sm btn-green" onclick="sharePayslipWhatsApp('${p.id}')">📱 WA</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) { console.error(e); }
+}
+
+async function openGeneratePayslip() {
+  let q = sb.from('employees').select('id, first_name, last_name, salary');
+  if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
+  const { data } = await q;
+  const sel = document.getElementById('payslip-employee');
+  sel.innerHTML = (data||[]).map(e => `<option value="${e.id}" data-salary="${e.salary||0}">${e.first_name} ${e.last_name}</option>`).join('');
+  sel.onchange = function() {
+    const opt = this.selectedOptions[0];
+    document.getElementById('payslip-gross').value = opt?.dataset.salary || '';
+  };
+  if (sel.options.length) sel.dispatchEvent(new Event('change'));
+  
+  const now = new Date();
+  document.getElementById('payslip-month').value = now.getMonth() + 1;
+  document.getElementById('payslip-year').value  = now.getFullYear();
+  document.getElementById('modal-generate-payslip').classList.remove('hidden');
+}
+
+async function savePayslip() {
+  const empId = document.getElementById('payslip-employee').value;
+  const gross = parseFloat(document.getElementById('payslip-gross').value);
+  const ded   = parseFloat(document.getElementById('payslip-deductions').value) || 0;
+  if (!empId || !gross) { toast('Remplissez les champs obligatoires', 'error'); return; }
+  
+  const { error } = await sb.from('payslips').insert({
+    employee_id: empId,
+    month: parseInt(document.getElementById('payslip-month').value),
+    year:  parseInt(document.getElementById('payslip-year').value),
+    gross_salary: gross, deductions: ded, net_salary: gross - ded,
+    company_id: currentCompany?.id
+  });
+  if (error) { toast('Erreur: ' + error.message, 'error'); return; }
+  toast('🖨️ Bulletin généré !', 'success');
+  closeModal('modal-generate-payslip');
+  loadPayroll();
+}
+
+function exportPayslipPDF(id) { toast('📄 Export PDF en cours…', 'info'); }
+function sharePayslipWhatsApp(id) { toast('📱 Partage WhatsApp en cours…', 'info'); }
+
+// ─── EVALUATIONS ───
+async function loadEvaluations() {
+  try {
+    let q = sb.from('evaluations').select('*, employees(first_name, last_name)').order('created_at', { ascending: false });
+    if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
+    const { data } = await q;
+    const list = data || [];
+    const tbody = document.getElementById('evals-table-body');
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">⭐</div><p>Aucune évaluation</p></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(e => {
+      const empName = e.employees ? `${e.employees.first_name} ${e.employees.last_name}` : '—';
+      const stars = '⭐'.repeat(Math.round((e.score||0)/2));
+      return `<tr>
+        <td>${empName}</td>
+        <td>${e.period||'—'}</td>
+        <td>${stars} <span style="color:var(--accent)">${e.score||0}/10</span></td>
+        <td>
+          <div class="progress-bar" style="width:100px;display:inline-block;vertical-align:middle">
+            <div class="progress-fill" style="width:${e.objectives_pct||0}%;background:var(--success)"></div>
+          </div>
+          <span style="font-size:12px;margin-left:6px">${e.objectives_pct||0}%</span>
+        </td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.comment||'—'}</td>
+        <td>
+          <button class="btn btn-sm btn-red" onclick="deleteEval('${e.id}')">🗑️</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) { console.error(e); }
+}
+
+async function openAddEvaluation() {
+  let q = sb.from('employees').select('id, first_name, last_name');
+  if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
+  const { data } = await q;
+  const sel = document.getElementById('eval-employee');
+  sel.innerHTML = (data||[]).map(e => `<option value="${e.id}">${e.first_name} ${e.last_name}</option>`).join('');
+  document.getElementById('modal-add-evaluation').classList.remove('hidden');
+}
+
+async function saveEvaluation() {
+  const empId = document.getElementById('eval-employee').value;
+  if (!empId) { toast('Sélectionnez un employé', 'error'); return; }
+  
+  const { error } = await sb.from('evaluations').insert({
+    employee_id: empId,
+    period: document.getElementById('eval-period').value,
+    score: parseFloat(document.getElementById('eval-score').value) || null,
+    objectives_pct: parseFloat(document.getElementById('eval-objectives').value) || null,
+    comment: document.getElementById('eval-comment').value,
+    company_id: currentCompany?.id
+  });
+  if (error) { toast('Erreur: ' + error.message, 'error'); return; }
+  toast('⭐ Évaluation enregistrée', 'success');
+  closeModal('modal-add-evaluation');
+  loadEvaluations();
+}
+
+async function deleteEval(id) {
+  if (!confirm('Supprimer cette évaluation ?')) return;
+  await sb.from('evaluations').delete().eq('id', id);
+  toast('Supprimé', 'success'); loadEvaluations();
+}
+
+// ─── SUPER ADMIN ───
+async function loadAllCompanies() {
+  if (currentRole !== 'superadmin') return;
+  try {
+    const { data: companies } = await sb.from('companies').select('*, profiles(first_name, last_name, email)');
+    const list = companies || [];
+    
+    document.getElementById('sa-total-companies').textContent = list.length;
+    
+    const thisMonth = new Date(); thisMonth.setDate(1);
+    const newThisMonth = list.filter(c => new Date(c.created_at) >= thisMonth).length;
+    const proPlans = list.filter(c => c.plan === 'pro').length;
+    document.getElementById('sa-pro-plans').textContent = proPlans;
+    document.getElementById('sa-this-month').textContent = newThisMonth;
+    
+    // Total employees
+    const { count: totalEmp } = await sb.from('employees').select('*', { count: 'exact', head: true });
+    document.getElementById('sa-total-employees').textContent = totalEmp || 0;
+    
+    const tbody = document.getElementById('companies-table-body');
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🏢</div><p>Aucune entreprise</p></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(c => {
+      const admin = Array.isArray(c.profiles) ? c.profiles[0] : c.profiles;
+      const adminName = admin ? `${admin.first_name||''} ${admin.last_name||''}` : '—';
+      const planBadge = c.plan === 'enterprise' ? 'badge-blue' : c.plan === 'pro' ? 'badge-green' : 'badge-gray';
+      return `<tr>
+        <td>
+          <div style="font-weight:700">${c.name||'—'}</div>
+          <div style="font-size:11px;color:var(--text2)">${c.city||''} · ${c.sector||''}</div>
+        </td>
+        <td><span class="badge ${planBadge}">${(c.plan||'starter').toUpperCase()}</span></td>
+        <td>—</td>
+        <td>${adminName}</td>
+        <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '—'}</td>
+        <td><span class="badge badge-green">Actif</span></td>
+        <td>
+          <div class="company-row-actions">
+            <button class="btn btn-sm btn-ghost" onclick="impersonateCompany('${c.id}','${(c.name||'').replace(/'/g,"\\'")}')">👁️ Voir</button>
+            <button class="btn btn-sm btn-red" onclick="suspendCompany('${c.id}')">🚫</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) { console.error(e); toast('Erreur chargement entreprises', 'error'); }
+}
+
+function impersonateCompany(id, name) {
+  toast(`👁️ Visualisation de "${name}"`, 'info');
+}
+function suspendCompany(id) {
+  if (confirm('Suspendre cette entreprise ?')) toast('Entreprise suspendue', 'error');
+}
+
+// ─── SETTINGS ───
+async function saveSettings() {
+  if (!currentCompany) { toast('Aucune entreprise liée', 'error'); return; }
+  const name = document.getElementById('settings-company-name').value.trim();
+  const { error } = await sb.from('companies').update({ name }).eq('id', currentCompany.id);
+  if (error) { toast('Erreur', 'error'); return; }
+  currentCompany.name = name;
+  document.getElementById('sb-company-name').textContent = name;
+  toast('✅ Paramètres sauvegardés', 'success');
+}
+
+async function updatePassword() {
+  const pass = document.getElementById('settings-password').value;
+  if (!pass || pass.length < 8) { toast('Mot de passe minimum 8 caractères', 'error'); return; }
+  const { error } = await sb.auth.updateUser({ password: pass });
+  if (error) { toast('Erreur: ' + error.message, 'error'); return; }
+  toast('🔑 Mot de passe mis à jour', 'success');
+  document.getElementById('settings-password').value = '';
+}
+
+// ─── UPLOAD DOC ───
+function openUploadDoc() { toast('Module Upload — Connectez votre bucket Supabase Storage', 'info'); }
+
+// ─── MODAL ───
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+// ─── LOGOUT ───
+async function handleLogout() {
+  await sb.auth.signOut();
+  currentUser = null; currentCompany = null; currentRole = null;
+  showScreen('landing');
+  toast('À bientôt !', 'info');
+}
+
+// ─── INIT ───
+async function init() {
+  // Check Supabase config
+  if (SUPABASE_URL.includes('your-project')) {
+    document.getElementById('global-loader').classList.add('hidden');
+    showScreen('landing');
+    setTimeout(() => toast('⚠️ Configurez vos clés Supabase dans le code (SUPABASE_URL / SUPABASE_ANON)', 'error', 8000), 500);
+    return;
+  }
+  
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    document.getElementById('global-loader').classList.add('hidden');
+    
+    if (session?.user) {
+      await loadUserContext(session.user);
+    } else {
+      showScreen('landing');
+    }
+    
+    // Écouter les changements d'auth
+    sb.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') showScreen('landing');
+    });
+  } catch(e) {
+    document.getElementById('global-loader').classList.add('hidden');
+    showScreen('landing');
+  }
+}
+
+// Sélectionner "Pro" par défaut
+selectPlan('pro');
+init();
+</script>
+</body>
+</html>
