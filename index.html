@@ -1203,8 +1203,8 @@ tbody td:first-child { color: var(--text); font-weight: 500; }
 ══════════════════════════════════════ -->
 <script>
 // ─── SUPABASE INIT ───
-const SUPABASE_URL = 'https://uaspipsffvtbiydswqwt.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_fop-_msYrKe-q7wEMkL-Hw_5RIg8EIo';
+const SUPABASE_URL = 'https://your-project.supabase.co'; // ← À remplacer
+const SUPABASE_ANON = 'your-anon-key';                   // ← À remplacer
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -1324,30 +1324,24 @@ async function handleRegister() {
     if (authError) throw authError;
     const userId = authData.user.id;
 
-    // 2. Créer l'entreprise (colonnes réelles: nom, email_admin, plan, actif)
+    // 2. Créer l'entreprise dans la table companies
     const { data: compData, error: compError } = await sb.from('companies').insert({
-      nom: companyName,
-      email_admin: email,
-      plan: selectedPlan,
-      actif: true
+      name: companyName, sector, size, city,
+      plan: selectedPlan, admin_id: userId,
+      created_at: new Date().toISOString()
     }).select().single();
     if (compError) throw compError;
     const companyId = compData.id;
 
-    // 3. Profil utilisateur (si table profiles existe)
-    try {
-      await sb.from('profiles').upsert({
-        id: userId, first_name: firstName, last_name: lastName,
-        email, role: 'admin', company_id: companyId
-      });
-    } catch(profErr) { console.warn('profiles:', profErr.message); }
+    // 3. Créer le profil utilisateur
+    const { error: profError } = await sb.from('profiles').upsert({
+      id: userId, first_name: firstName, last_name: lastName,
+      email, role: 'admin', company_id: companyId
+    });
+    if (profError) throw profError;
 
-    toast(`🎉 Espace "${companyName}" créé avec succès !`, 'success', 5000);
-    setTimeout(() => {
-      document.getElementById('login-email').value = email;
-      switchAuthTab('login');
-      toast('👉 Connectez-vous maintenant avec votre email et mot de passe.', 'info', 5000);
-    }, 2000);
+    toast(`🎉 Espace "${companyName}" créé ! Vérifiez votre email.`, 'success', 6000);
+    setTimeout(() => switchAuthTab('login'), 2000);
   } catch(e) {
     toast(e.message || 'Erreur lors de l\'inscription', 'error');
   } finally { btn.disabled = false; btn.textContent = 'Créer mon espace 🎉'; }
@@ -1356,45 +1350,32 @@ async function handleRegister() {
 // ─── LOAD USER CONTEXT ───
 async function loadUserContext(user) {
   try {
-    currentUser = user;
-
-    // Chercher l'entreprise par email_admin
-    const { data: companies, error } = await sb
-      .from('companies')
-      .select('*')
-      .eq('email_admin', user.email)
-      .limit(1);
-
-    if (error) {
-      console.error('Erreur companies:', error.message);
-      // On entre quand même
-      currentRole = 'admin';
-      currentCompany = null;
-      renderApp();
+    // Chercher le profil (role, company)
+    let { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+    
+    if (!profile) {
+      // Fallback: check if superadmin by email
+      if (user.email === 'superadmin@rhsmartaxis.com') {
+        currentUser = user; currentRole = 'superadmin'; currentCompany = null;
+        renderApp();
+        return;
+      }
+      toast('Profil introuvable. Contactez l\'administrateur.', 'error');
       return;
     }
 
-    const company = (companies && companies.length > 0) ? companies[0] : null;
-    currentCompany = company;
-
-    // Détecter le rôle
-    if (company && company.role === 'superadmin') {
-      currentRole = 'superadmin';
-    } else if (company) {
-      currentRole = 'admin';
-    } else {
-      // Pas d'entreprise trouvée = employé ou accès direct
-      currentRole = 'admin';
+    currentUser    = { ...user, ...profile };
+    currentRole    = profile.role || 'employee';
+    
+    if (profile.company_id) {
+      const { data: company } = await sb.from('companies').select('*').eq('id', profile.company_id).single();
+      currentCompany = company;
     }
-
+    
     renderApp();
-
   } catch(e) {
-    console.error('loadUserContext error:', e);
-    currentUser = user;
-    currentRole = 'admin';
-    currentCompany = null;
-    renderApp();
+    console.error(e);
+    toast('Erreur lors du chargement du profil', 'error');
   }
 }
 
@@ -1407,22 +1388,20 @@ function renderApp() {
   
   document.getElementById('sb-username').textContent = name;
   document.getElementById('sb-userrole').textContent = 
-    currentRole === 'superadmin' ? '🛡️ Super Admin — AXIS' :
+    currentRole === 'superadmin' ? '🛡️ Super Admin' :
     currentRole === 'admin'      ? '⚙️ Administrateur' : '👤 Employé';
   document.getElementById('sb-avatar').textContent = name.charAt(0).toUpperCase();
-  document.getElementById('sb-company-name').textContent = currentCompany?.nom || currentCompany?.name || 'RHSMART AXIS';
+  document.getElementById('sb-company-name').textContent = currentCompany?.name || 'RHSMART AXIS';
   document.getElementById('sb-company-plan').textContent = 
     currentCompany?.plan ? `Plan ${currentCompany.plan.charAt(0).toUpperCase() + currentCompany.plan.slice(1)}` : 'Plateforme';
-  const welcomeMsg = currentRole === 'superadmin'
-    ? `🛡️ Mode Super Admin actif — Gestion globale de la plateforme RHSMART AXIS`
-    : `Bienvenue, ${name.split(' ')[0]} ! Voici votre tableau de bord RH.`;
-  document.getElementById('dash-subtitle').textContent = welcomeMsg;
+  document.getElementById('dash-subtitle').textContent = 
+    `Bienvenue, ${name.split(' ')[0]} ! Voici votre tableau de bord RH.`;
 
   // Settings
   if (document.getElementById('settings-email'))
     document.getElementById('settings-email').value = currentUser?.email || '';
   if (document.getElementById('settings-company-name') && currentCompany)
-    document.getElementById('settings-company-name').value = currentCompany.nom || currentCompany.name || '';
+    document.getElementById('settings-company-name').value = currentCompany.name || '';
 
   // Super Admin nav
   if (currentRole === 'superadmin')
@@ -1458,9 +1437,9 @@ function companyFilter() {
 // ─── DASHBOARD ───
 async function loadDashboard() {
   try {
-    let empQ = sb.from('employes').select('*', { count: 'exact', head: true });
-    let lvQ  = sb.from('conges').select('*', { count: 'exact', head: true }).eq('status','pending');
-    let payQ = sb.from('bulletins').select('*', { count: 'exact', head: true });
+    let empQ = sb.from('employees').select('*', { count: 'exact', head: true });
+    let lvQ  = sb.from('leaves').select('*', { count: 'exact', head: true }).eq('status','pending');
+    let payQ = sb.from('payslips').select('*', { count: 'exact', head: true });
     let evQ  = sb.from('evaluations').select('*', { count: 'exact', head: true });
     
     if (currentCompany?.id) {
@@ -1480,7 +1459,7 @@ async function loadDashboard() {
     document.getElementById('nb-leaves').textContent      = l.count ?? 0;
     
     // Recent employees
-    let recEmpQ = sb.from('employes').select('*').order('created_at', { ascending: false }).limit(5);
+    let recEmpQ = sb.from('employees').select('*').order('created_at', { ascending: false }).limit(5);
     if (currentCompany?.id) recEmpQ = recEmpQ.eq('company_id', currentCompany.id);
     const { data: recEmps } = await recEmpQ;
     
@@ -1488,10 +1467,10 @@ async function loadDashboard() {
     if (recEmps && recEmps.length > 0) {
       empContainer.innerHTML = recEmps.map(e => `
         <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div class="avatar" style="width:32px;height:32px;font-size:12px;border-radius:8px">${(e.prenom||'?').charAt(0)}</div>
+          <div class="avatar" style="width:32px;height:32px;font-size:12px;border-radius:8px">${(e.first_name||'?').charAt(0)}</div>
           <div>
-            <div style="font-size:13px;font-weight:600">${e.prenom||''} ${e.nom||''}</div>
-            <div style="font-size:11px;color:var(--text2)">${e.poste||'—'}</div>
+            <div style="font-size:13px;font-weight:600">${e.first_name||''} ${e.last_name||''}</div>
+            <div style="font-size:11px;color:var(--text2)">${e.position||'—'}</div>
           </div>
           <span class="badge badge-green" style="margin-left:auto">Actif</span>
         </div>`).join('');
@@ -1500,19 +1479,19 @@ async function loadDashboard() {
     }
     
     // Recent leaves
-    let recLvQ = sb.from('conges').select('*, employes(prenom, nom)').order('created_at', { ascending: false }).limit(5);
+    let recLvQ = sb.from('leaves').select('*, employees(first_name, last_name)').order('created_at', { ascending: false }).limit(5);
     if (currentCompany?.id) recLvQ = recLvQ.eq('company_id', currentCompany.id);
     const { data: recLvs } = await recLvQ;
     
     const lvContainer = document.getElementById('dash-recent-leaves');
     if (recLvs && recLvs.length > 0) {
       lvContainer.innerHTML = recLvs.map(l => {
-        const empName = l.employes ? `${l.employes.first_name||''} ${l.employes.last_name||''}` : 'Inconnu';
-        const badgeClass = l.statut === 'approuve' ? 'badge-green' : l.statut === 'refuse' ? 'badge-red' : 'badge-yellow';
+        const empName = l.employees ? `${l.employees.first_name||''} ${l.employees.last_name||''}` : 'Inconnu';
+        const badgeClass = l.status === 'approved' ? 'badge-green' : l.status === 'rejected' ? 'badge-red' : 'badge-yellow';
         return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
           <div style="flex:1"><div style="font-size:13px;font-weight:600">${empName}</div>
-          <div style="font-size:11px;color:var(--text2)">${l.type_conge||'—'} · ${l.date_debut||''}</div></div>
-          <span class="badge ${badgeClass}">${l.statut||'en_attente'}</span>
+          <div style="font-size:11px;color:var(--text2)">${l.type||'—'} · ${l.start_date||''}</div></div>
+          <span class="badge ${badgeClass}">${l.status||'pending'}</span>
         </div>`;
       }).join('');
     } else {
@@ -1524,7 +1503,7 @@ async function loadDashboard() {
 // ─── EMPLOYEES ───
 async function loadEmployees() {
   try {
-    let q = sb.from('employes').select('*').order('created_at', { ascending: false });
+    let q = sb.from('employees').select('*').order('created_at', { ascending: false });
     if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
     const { data, error } = await q;
     if (error) throw error;
@@ -1543,16 +1522,16 @@ function renderEmployeesTable(list) {
     <tr>
       <td>
         <div style="display:flex;align-items:center;gap:10px">
-          <div class="avatar" style="width:32px;height:32px;font-size:12px;border-radius:8px">${(e.prenom||'?').charAt(0)}</div>
+          <div class="avatar" style="width:32px;height:32px;font-size:12px;border-radius:8px">${(e.first_name||'?').charAt(0)}</div>
           <div>
-            <div style="font-weight:600">${e.prenom||''} ${e.nom||''}</div>
+            <div style="font-weight:600">${e.first_name||''} ${e.last_name||''}</div>
             <div style="font-size:11px;color:var(--text2)">${e.email||''}</div>
           </div>
         </div>
       </td>
-      <td>${e.poste||'—'}</td>
-      <td>${e.departement||'—'}</td>
-      <td>${e.date_embauche ? new Date(e.date_embauche).toLocaleDateString('fr-FR') : '—'}</td>
+      <td>${e.position||'—'}</td>
+      <td>${e.department||'—'}</td>
+      <td>${e.hire_date ? new Date(e.hire_date).toLocaleDateString('fr-FR') : '—'}</td>
       <td><span class="badge badge-green">Actif</span></td>
       <td>
         <div style="display:flex;gap:6px">
@@ -1566,7 +1545,7 @@ function renderEmployeesTable(list) {
 function filterEmployees() {
   const q = document.getElementById('emp-search').value.toLowerCase();
   const filtered = employees.filter(e =>
-    `${e.prenom} ${e.nom} ${e.position} ${e.department}`.toLowerCase().includes(q)
+    `${e.first_name} ${e.last_name} ${e.position} ${e.department}`.toLowerCase().includes(q)
   );
   renderEmployeesTable(filtered);
 }
@@ -1579,7 +1558,7 @@ function viewEmployee(id) {
 
 async function deleteEmployee(id) {
   if (!confirm('Supprimer cet employé ?')) return;
-  const { error } = await sb.from('employes').delete().eq('id', id);
+  const { error } = await sb.from('employees').delete().eq('id', id);
   if (error) { toast('Erreur suppression', 'error'); return; }
   toast('Employé supprimé', 'success');
   loadEmployees();
@@ -1598,16 +1577,16 @@ async function saveEmployee() {
   const pos   = document.getElementById('emp-position').value.trim();
   if (!first || !last || !pos) { toast('Champs obligatoires manquants', 'error'); return; }
   
-  const { error } = await sb.from('employes').insert({
-    prenom: first, nom: last,
+  const { error } = await sb.from('employees').insert({
+    first_name: first, last_name: last,
     email: document.getElementById('emp-email').value.trim(),
-    poste: pos,
-    departement: document.getElementById('emp-dept').value.trim(),
-    date_embauche: document.getElementById('emp-hire-date').value || null,
-    salaire: parseFloat(document.getElementById('emp-salary').value) || null,
-    telephone: document.getElementById('emp-phone').value.trim(),
+    position: pos,
+    department: document.getElementById('emp-dept').value.trim(),
+    hire_date: document.getElementById('emp-hire-date').value || null,
+    salary: parseFloat(document.getElementById('emp-salary').value) || null,
+    phone: document.getElementById('emp-phone').value.trim(),
     company_id: currentCompany?.id,
-    statut: 'actif'
+    status: 'active'
   });
   if (error) { toast('Erreur: ' + error.message, 'error'); return; }
   toast('✅ Employé ajouté !', 'success');
@@ -1618,15 +1597,15 @@ async function saveEmployee() {
 // ─── LEAVES ───
 async function loadLeaves() {
   try {
-    let q = sb.from('conges').select('*, employes(prenom, nom)').order('created_at', { ascending: false });
+    let q = sb.from('leaves').select('*, employees(first_name, last_name)').order('created_at', { ascending: false });
     if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
     const { data, error } = await q;
     if (error) throw error;
     const list = data || [];
     
-    const pending  = list.filter(l => l.statut === 'en_attente').length;
-    const approved = list.filter(l => l.statut === 'approuve').length;
-    const rejected = list.filter(l => l.statut === 'refuse').length;
+    const pending  = list.filter(l => l.status === 'pending').length;
+    const approved = list.filter(l => l.status === 'approved').length;
+    const rejected = list.filter(l => l.status === 'rejected').length;
     
     document.getElementById('leaves-pending').textContent  = pending;
     document.getElementById('leaves-approved').textContent = approved;
@@ -1639,19 +1618,19 @@ async function loadLeaves() {
       return;
     }
     tbody.innerHTML = list.map(l => {
-      const empName = l.employes ? `${l.employes.first_name||''} ${l.employes.last_name||''}` : '—';
-      const days = l.date_debut && l.date_fin ?
-        Math.ceil((new Date(l.date_fin) - new Date(l.date_debut)) / 86400000) + 1 : '—';
-      const badgeClass = l.statut === 'approuve' ? 'badge-green' : l.statut === 'refuse' ? 'badge-red' : 'badge-yellow';
+      const empName = l.employees ? `${l.employees.first_name||''} ${l.employees.last_name||''}` : '—';
+      const days = l.start_date && l.end_date ?
+        Math.ceil((new Date(l.end_date) - new Date(l.start_date)) / 86400000) + 1 : '—';
+      const badgeClass = l.status === 'approved' ? 'badge-green' : l.status === 'rejected' ? 'badge-red' : 'badge-yellow';
       return `<tr>
         <td>${empName}</td>
-        <td>${l.type_conge||'—'}</td>
-        <td>${l.date_debut ? new Date(l.date_debut).toLocaleDateString('fr-FR') : '—'}</td>
-        <td>${l.date_fin ? new Date(l.date_fin).toLocaleDateString('fr-FR') : '—'}</td>
+        <td>${l.type||'—'}</td>
+        <td>${l.start_date ? new Date(l.start_date).toLocaleDateString('fr-FR') : '—'}</td>
+        <td>${l.end_date ? new Date(l.end_date).toLocaleDateString('fr-FR') : '—'}</td>
         <td>${days}</td>
-        <td><span class="badge ${badgeClass}">${l.statut||'en_attente'}</span></td>
+        <td><span class="badge ${badgeClass}">${l.status||'pending'}</span></td>
         <td>
-          ${l.statut === 'en_attente' ? `
+          ${l.status === 'pending' ? `
             <button class="btn btn-sm btn-green" onclick="updateLeaveStatus('${l.id}','approved')">✓</button>
             <button class="btn btn-sm btn-red" onclick="updateLeaveStatus('${l.id}','rejected')">✗</button>
           ` : '<span class="text-muted text-sm">Traité</span>'}
@@ -1662,7 +1641,7 @@ async function loadLeaves() {
 }
 
 async function updateLeaveStatus(id, status) {
-  const { error } = await sb.from('conges').update({ status }).eq('id', id);
+  const { error } = await sb.from('leaves').update({ status }).eq('id', id);
   if (error) { toast('Erreur', 'error'); return; }
   toast(status === 'approved' ? '✅ Congé approuvé' : '❌ Congé refusé', status === 'approved' ? 'success' : 'error');
   loadLeaves();
@@ -1670,11 +1649,11 @@ async function updateLeaveStatus(id, status) {
 
 async function openAddLeave() {
   // Charger les employés
-  let q = sb.from('employes').select('id, prenom, nom');
+  let q = sb.from('employees').select('id, first_name, last_name');
   if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
   const { data } = await q;
   const sel = document.getElementById('leave-employee');
-  sel.innerHTML = (data||[]).map(e => `<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');
+  sel.innerHTML = (data||[]).map(e => `<option value="${e.id}">${e.first_name} ${e.last_name}</option>`).join('');
   document.getElementById('modal-add-leave').classList.remove('hidden');
 }
 
@@ -1684,12 +1663,12 @@ async function saveLeave() {
   const end   = document.getElementById('leave-end').value;
   if (!empId || !start || !end) { toast('Remplissez les champs obligatoires', 'error'); return; }
   
-  const { error } = await sb.from('conges').insert({
+  const { error } = await sb.from('leaves').insert({
     employee_id: empId,
-    type_conge: document.getElementById('leave-type').value,
-    date_debut: start, date_fin: end,
-    motif: document.getElementById('leave-reason').value,
-    statut: 'en_attente',
+    type: document.getElementById('leave-type').value,
+    start_date: start, end_date: end,
+    reason: document.getElementById('leave-reason').value,
+    status: 'pending',
     company_id: currentCompany?.id
   });
   if (error) { toast('Erreur: ' + error.message, 'error'); return; }
@@ -1701,7 +1680,7 @@ async function saveLeave() {
 // ─── PAYROLL ───
 async function loadPayroll() {
   try {
-    let q = sb.from('bulletins').select('*, employes(prenom, nom)').order('created_at', { ascending: false });
+    let q = sb.from('payslips').select('*, employees(first_name, last_name)').order('created_at', { ascending: false });
     if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
     const { data } = await q;
     const list = data || [];
@@ -1711,12 +1690,12 @@ async function loadPayroll() {
       return;
     }
     tbody.innerHTML = list.map(p => {
-      const empName = p.employes ? `${p.employes.prenom} ${p.employes.nom}` : '—';
-      const net = (p.salaire_brut || 0) - (p.deductions || 0);
+      const empName = p.employees ? `${p.employees.first_name} ${p.employees.last_name}` : '—';
+      const net = (p.gross_salary || 0) - (p.deductions || 0);
       return `<tr>
         <td>${empName}</td>
-        <td>${p.mois||'—'}/${p.annee||'—'}</td>
-        <td>${(p.salaire_brut||0).toLocaleString('fr-FR')} FCFA</td>
+        <td>${p.month||'—'}/${p.year||'—'}</td>
+        <td>${(p.gross_salary||0).toLocaleString('fr-FR')} FCFA</td>
         <td style="color:var(--success);font-weight:700">${net.toLocaleString('fr-FR')} FCFA</td>
         <td><span class="badge badge-green">Généré</span></td>
         <td>
@@ -1731,11 +1710,11 @@ async function loadPayroll() {
 }
 
 async function openGeneratePayslip() {
-  let q = sb.from('employes').select('id, prenom, nom, salaire');
+  let q = sb.from('employees').select('id, first_name, last_name, salary');
   if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
   const { data } = await q;
   const sel = document.getElementById('payslip-employee');
-  sel.innerHTML = (data||[]).map(e => `<option value="${e.id}" data-salary="${e.salaire||0}">${e.prenom} ${e.nom}</option>`).join('');
+  sel.innerHTML = (data||[]).map(e => `<option value="${e.id}" data-salary="${e.salary||0}">${e.first_name} ${e.last_name}</option>`).join('');
   sel.onchange = function() {
     const opt = this.selectedOptions[0];
     document.getElementById('payslip-gross').value = opt?.dataset.salary || '';
@@ -1754,11 +1733,11 @@ async function savePayslip() {
   const ded   = parseFloat(document.getElementById('payslip-deductions').value) || 0;
   if (!empId || !gross) { toast('Remplissez les champs obligatoires', 'error'); return; }
   
-  const { error } = await sb.from('bulletins').insert({
+  const { error } = await sb.from('payslips').insert({
     employee_id: empId,
-    mois: parseInt(document.getElementById('payslip-month').value),
-    annee: parseInt(document.getElementById('payslip-year').value),
-    salaire_brut: gross, deductions: ded, salaire_net: gross - ded,
+    month: parseInt(document.getElementById('payslip-month').value),
+    year:  parseInt(document.getElementById('payslip-year').value),
+    gross_salary: gross, deductions: ded, net_salary: gross - ded,
     company_id: currentCompany?.id
   });
   if (error) { toast('Erreur: ' + error.message, 'error'); return; }
@@ -1773,7 +1752,7 @@ function sharePayslipWhatsApp(id) { toast('📱 Partage WhatsApp en cours…', '
 // ─── EVALUATIONS ───
 async function loadEvaluations() {
   try {
-    let q = sb.from('evaluations').select('*, employes(prenom, nom)').order('created_at', { ascending: false });
+    let q = sb.from('evaluations').select('*, employees(first_name, last_name)').order('created_at', { ascending: false });
     if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
     const { data } = await q;
     const list = data || [];
@@ -1783,7 +1762,7 @@ async function loadEvaluations() {
       return;
     }
     tbody.innerHTML = list.map(e => {
-      const empName = e.employes ? `${e.employes.prenom} ${e.employes.nom}` : '—';
+      const empName = e.employees ? `${e.employees.first_name} ${e.employees.last_name}` : '—';
       const stars = '⭐'.repeat(Math.round((e.score||0)/2));
       return `<tr>
         <td>${empName}</td>
@@ -1791,9 +1770,9 @@ async function loadEvaluations() {
         <td>${stars} <span style="color:var(--accent)">${e.score||0}/10</span></td>
         <td>
           <div class="progress-bar" style="width:100px;display:inline-block;vertical-align:middle">
-            <div class="progress-fill" style="width:${e.objectifs_pct||0}%;background:var(--success)"></div>
+            <div class="progress-fill" style="width:${e.objectives_pct||0}%;background:var(--success)"></div>
           </div>
-          <span style="font-size:12px;margin-left:6px">${e.objectifs_pct||0}%</span>
+          <span style="font-size:12px;margin-left:6px">${e.objectives_pct||0}%</span>
         </td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.comment||'—'}</td>
         <td>
@@ -1805,11 +1784,11 @@ async function loadEvaluations() {
 }
 
 async function openAddEvaluation() {
-  let q = sb.from('employes').select('id, prenom, nom');
+  let q = sb.from('employees').select('id, first_name, last_name');
   if (currentCompany?.id) q = q.eq('company_id', currentCompany.id);
   const { data } = await q;
   const sel = document.getElementById('eval-employee');
-  sel.innerHTML = (data||[]).map(e => `<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');
+  sel.innerHTML = (data||[]).map(e => `<option value="${e.id}">${e.first_name} ${e.last_name}</option>`).join('');
   document.getElementById('modal-add-evaluation').classList.remove('hidden');
 }
 
@@ -1821,7 +1800,7 @@ async function saveEvaluation() {
     employee_id: empId,
     period: document.getElementById('eval-period').value,
     score: parseFloat(document.getElementById('eval-score').value) || null,
-    objectifs_pct: parseFloat(document.getElementById('eval-objectives').value) || null,
+    objectives_pct: parseFloat(document.getElementById('eval-objectives').value) || null,
     comment: document.getElementById('eval-comment').value,
     company_id: currentCompany?.id
   });
@@ -1841,7 +1820,7 @@ async function deleteEval(id) {
 async function loadAllCompanies() {
   if (currentRole !== 'superadmin') return;
   try {
-    const { data: companies } = await sb.from('companies').select('*').order('created_at', { ascending: false });
+    const { data: companies } = await sb.from('companies').select('*, profiles(first_name, last_name, email)');
     const list = companies || [];
     
     document.getElementById('sa-total-companies').textContent = list.length;
@@ -1853,7 +1832,7 @@ async function loadAllCompanies() {
     document.getElementById('sa-this-month').textContent = newThisMonth;
     
     // Total employees
-    const { count: totalEmp } = await sb.from('employes').select('*', { count: 'exact', head: true });
+    const { count: totalEmp } = await sb.from('employees').select('*', { count: 'exact', head: true });
     document.getElementById('sa-total-employees').textContent = totalEmp || 0;
     
     const tbody = document.getElementById('companies-table-body');
@@ -1862,12 +1841,13 @@ async function loadAllCompanies() {
       return;
     }
     tbody.innerHTML = list.map(c => {
-      const adminName = c.email_admin || '—';
+      const admin = Array.isArray(c.profiles) ? c.profiles[0] : c.profiles;
+      const adminName = admin ? `${admin.first_name||''} ${admin.last_name||''}` : '—';
       const planBadge = c.plan === 'enterprise' ? 'badge-blue' : c.plan === 'pro' ? 'badge-green' : 'badge-gray';
       return `<tr>
         <td>
-          <div style="font-weight:700">${c.nom||'—'}</div>
-          <div style="font-size:11px;color:var(--text2)">${c.email_admin||''}</div>
+          <div style="font-weight:700">${c.name||'—'}</div>
+          <div style="font-size:11px;color:var(--text2)">${c.city||''} · ${c.sector||''}</div>
         </td>
         <td><span class="badge ${planBadge}">${(c.plan||'starter').toUpperCase()}</span></td>
         <td>—</td>
@@ -1896,7 +1876,7 @@ function suspendCompany(id) {
 async function saveSettings() {
   if (!currentCompany) { toast('Aucune entreprise liée', 'error'); return; }
   const name = document.getElementById('settings-company-name').value.trim();
-  const { error } = await sb.from('companies').update({ nom: name }).eq('id', currentCompany.id);
+  const { error } = await sb.from('companies').update({ name }).eq('id', currentCompany.id);
   if (error) { toast('Erreur', 'error'); return; }
   currentCompany.name = name;
   document.getElementById('sb-company-name').textContent = name;
