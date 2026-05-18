@@ -7,7 +7,8 @@
     {"src": "/login", "dest": "/login.html"},
     {"src": "/reset-password", "dest": "/reset-password.html"},
     {"src": "/phase3-4", "dest": "/phase3-4.html"},
-    {"src": "/", "dest": "/login.html"},
-    {"src": "/(.*)", "dest": "/$1"}
+    {"src": "/", "dest": "/index.html"},
+    {"src": "/(.*)\\.html", "dest": "/$1.html"},
+    {"src": "/(.*)", "dest": "/index.html"}
   ]
 }
