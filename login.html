@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RHSMART AXIS — Connexion</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070c18;--surface:#0e1525;--surface2:#162035;--border:#1e3050;--accent:#00e5b4;--danger:#ef4444;--success:#22c55e;--text:#e2e8f0;--text2:#94a3b8;--text3:#475569;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 50%,rgba(0,229,180,0.07) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 80% 30%,rgba(59,130,246,0.07) 0%,transparent 60%);}
+.box{position:relative;z-index:1;width:100%;max-width:420px;background:rgba(14,21,37,0.95);border:1px solid var(--border);border-radius:20px;padding:40px;backdrop-filter:blur(20px);}
+.brand{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:32px;}
+.brand-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#3b82f6);display:flex;align-items:center;justify-content:center;font-size:20px;}
+.brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;background:linear-gradient(135deg,var(--accent),#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;text-align:center;margin-bottom:6px;}
+.sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:28px;}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:24px;}
+.tab{flex:1;padding:10px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;text-align:center;transition:all .2s;color:var(--text2);border:none;background:none;font-family:'DM Sans',sans-serif;}
+.tab.active{background:var(--surface2);color:var(--text);}
+.label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:7px;letter-spacing:.5px;}
+.input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:14px;transition:border-color .2s;}
+.input:focus{border-color:var(--accent);}
+.pw{position:relative;}
+.pw .input{margin-bottom:0;padding-right:44px;}
+.pw-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;}
+.mb{margin-bottom:14px;}
+.btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),#00b896);color:#000;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;margin-bottom:12px;}
+.btn:hover{opacity:.9;transform:translateY(-1px);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-out{width:100%;padding:11px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;}
+.btn-out:hover{border-color:var(--accent);color:var(--accent);}
+.msg{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none;}
+.msg.show{display:block;}
+.err{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--danger);}
+.ok{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:var(--success);}
+.foot{text-align:center;margin-top:20px;font-size:11px;color:var(--text3);}
+.forgot{text-align:right;margin-bottom:14px;font-size:12px;}
+.forgot a{color:#3b82f6;cursor:pointer;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="box">
+  <div class="brand">
+    <div class="brand-icon">⚡</div>
+    <div class="brand-name">RHSMART AXIS</div>
+  </div>
+
+  <div class="title">Connexion</div>
+  <div class="sub">Accédez à votre espace RHSMART AXIS</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('login')">Se connecter</button>
+    <button class="tab" onclick="showTab('register')">Créer un compte</button>
+  </div>
+
+  <div class="msg err" id="errMsg"></div>
+  <div class="msg ok" id="okMsg"></div>
+
+  <!-- LOGIN -->
+  <div id="loginPanel">
+    <label class="label">ADRESSE EMAIL</label>
+    <input type="email" class="input" id="loginEmail" placeholder="vous@exemple.com">
+    <label class="label">MOT DE PASSE</label>
+    <div class="pw mb">
+      <input type="password" class="input" id="loginPw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="pw-btn" onclick="togglePw('loginPw',this)">👁️</button>
+    </div>
+    <div class="forgot"><a onclick="showForgot()">Mot de passe oublié ?</a></div>
+    <button class="btn" id="btnLogin" onclick="doLogin()">Se connecter</button>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="registerPanel" style="display:none">
+    <label class="label">NOM COMPLET</label>
+    <input type="text" class="input" id="regName" placeholder="Votre nom">
+    <label class="label">ADRESSE EMAIL</label>
+    <input type="email" class="input" id="regEmail" placeholder="vous@exemple.com">
+    <label class="label">MOT DE PASSE</label>
+    <div class="pw mb">
+      <input type="password" class="input" id="regPw" placeholder="Min. 8 caractères">
+      <button class="pw-btn" onclick="togglePw('regPw',this)">👁️</button>
+    </div>
+    <button class="btn" id="btnReg" onclick="doRegister()">Créer mon compte</button>
+  </div>
+
+  <!-- FORGOT -->
+  <div id="forgotPanel" style="display:none">
+    <div style="text-align:center;margin-bottom:20px"><div style="font-size:36px">🔑</div><div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-top:8px">Réinitialiser</div></div>
+    <label class="label">VOTRE EMAIL</label>
+    <input type="email" class="input" id="forgotEmail" placeholder="vous@exemple.com">
+    <button class="btn" onclick="doForgot()">📧 Envoyer le lien</button>
+    <button class="btn-out" onclick="showTab('login')">← Retour</button>
+  </div>
+
+  <div class="foot">RHSMART AXIS v2.0 · Sécurisé par Supabase Auth</div>
+</div>
+
+<script>
+const SURL='https://uaspipsffvtbiydswqwt.supabase.co';
+const SKEY='sb_publishable_fop-_msYrKe-q7wEMkL-Hw_5RIg8EIo';
+const sb=supabase.createClient(SURL,SKEY);
+
+// Vérifier session existante
+sb.auth.getSession().then(({data:{session}})=>{
+  if(session) goToApp();
+});
+
+function goToApp(){window.location.href='/index.html';}
+
+function showTab(t){
+  ['login','register','forgot'].forEach(p=>{
+    document.getElementById(p+'Panel').style.display='none';
+  });
+  document.getElementById(t+'Panel').style.display='block';
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('active',(t==='login'&&i===0)||(t==='register'&&i===1));
+  });
+  clearMsgs();
+}
+
+function showForgot(){
+  document.getElementById('loginPanel').style.display='none';
+  document.getElementById('forgotPanel').style.display='block';
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  clearMsgs();
+}
+
+function togglePw(id,btn){
+  const i=document.getElementById(id);
+  i.type=i.type==='password'?'text':'password';
+  btn.textContent=i.type==='password'?'👁️':'🙈';
+}
+
+function showErr(m){const e=document.getElementById('errMsg');e.textContent='❌ '+m;e.className='msg err show';document.getElementById('okMsg').className='msg ok';}
+function showOk(m){const e=document.getElementById('okMsg');e.textContent='✅ '+m;e.className='msg ok show';document.getElementById('errMsg').className='msg err';}
+function clearMsgs(){document.getElementById('errMsg').className='msg err';document.getElementById('okMsg').className='msg ok';}
+
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pw=document.getElementById('loginPw').value;
+  if(!email||!pw){showErr('Remplissez tous les champs.');return;}
+  const btn=document.getElementById('btnLogin');
+  btn.disabled=true;btn.textContent='⏳ Connexion...';
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pw});
+  if(error){showErr(errMsg(error.message));btn.disabled=false;btn.textContent='Se connecter';return;}
+  showOk('Connexion réussie ! Redirection...');
+  // Sauvegarder session
+  const role=await getRole(data.user.id);
+  sessionStorage.setItem('rh_user',JSON.stringify({
+    id:data.user.id,email:data.user.email,
+    name:data.user.user_metadata?.full_name||data.user.email.split('@')[0],
+    role:role
+  }));
+  setTimeout(goToApp,1000);
+}
+
+async function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const pw=document.getElementById('regPw').value;
+  if(!name||!email||!pw){showErr('Remplissez tous les champs.');return;}
+  if(pw.length<8){showErr('Mot de passe trop court (min. 8 caractères).');return;}
+  const btn=document.getElementById('btnReg');
+  btn.disabled=true;btn.textContent='⏳ Création...';
+  const{data,error}=await sb.auth.signUp({email,password:pw,options:{data:{full_name:name}}});
+  if(error){showErr(errMsg(error.message));btn.disabled=false;btn.textContent='Créer mon compte';return;}
+  // Insérer profil — ignorer l'erreur si ça échoue
+  if(data.user){
+    try{await sb.from('user_profiles').insert([{user_id:data.user.id,role:'employe'}]);}catch(e){}
+  }
+  showOk('Compte créé ! Vérifiez votre email puis connectez-vous.');
+  btn.disabled=false;btn.textContent='Créer mon compte';
+  setTimeout(()=>showTab('login'),3000);
+}
+
+async function doForgot(){
+  const email=document.getElementById('forgotEmail').value.trim();
+  if(!email){showErr('Entrez votre email.');return;}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/reset-password.html'});
+  if(error){showErr(error.message);return;}
+  showOk('Email envoyé ! Vérifiez votre boîte mail.');
+}
+
+async function getRole(uid){
+  try{
+    const{data}=await sb.from('user_profiles').select('role').eq('user_id',uid).single();
+    return data?.role||'employe';
+  }catch{return'employe';}
+}
+
+function errMsg(m){
+  const e={'Invalid login credentials':'Email ou mot de passe incorrect.','Email not confirmed':'Confirmez votre email d\'abord.','User already registered':'Un compte existe déjà avec cet email.'};
+  return e[m]||m||'Erreur inattendue.';
+}
+</script>
+</body>
+</html>
