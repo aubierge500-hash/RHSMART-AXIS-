@@ -1,6 +1,10 @@
-
 {
   "version": 2,
-  "builds": [{"src": "index.html", "use": "@vercel/static"}],
-  "routes": [{"src": "/(.*)", "dest": "/index.html"}]
+  "rewrites": [
+    {"source": "/login", "destination": "/login.html"},
+    {"source": "/login.html", "destination": "/login.html"},
+    {"source": "/reset-password", "destination": "/reset-password.html"},
+    {"source": "/phase3-4", "destination": "/phase3-4.html"},
+    {"source": "/(.*)", "destination": "/index.html"}
+  ]
 }
