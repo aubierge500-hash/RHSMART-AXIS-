@@ -2,6 +2,12 @@
   "version": 2,
   "routes": [
     { "src": "/", "dest": "/login.html" },
+    { "src": "/login", "dest": "/login.html" },
+    { "src": "/login.html", "dest": "/login.html" },
+    { "src": "/index", "dest": "/index.html" },
+    { "src": "/index.html", "dest": "/index.html" },
+    { "src": "/phase3-4.html", "dest": "/phase3-4.html" },
+    { "src": "/reset-password.html", "dest": "/reset-password.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
