@@ -1,35 +1,9 @@
+
+}
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    }
-  ],
   "routes": [
-    {
-      "src": "/",
-      "dest": "/login.html"
-    },
-    {
-      "src": "/login",
-      "dest": "/login.html"
-    },
-    {
-      "src": "/app",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/phase3-4",
-      "dest": "/phase3-4.html"
-    },
-    {
-      "src": "/reset-password",
-      "dest": "/reset-password.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
+    { "src": "/", "dest": "/login.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
