@@ -1,0 +1,2701 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>RHSMART AXIS — SIRH Intelligent & Complet</title>
+
+<!-- ═══ PWA META TAGS ═══ -->
+<meta name="application-name" content="RHSMART AXIS"/>
+<meta name="description" content="Système d'Information RH intelligent pour entreprises béninoises — AXIS ADMIN ET RH"/>
+<meta name="theme-color" content="#00E5B4"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="RHSMART AXIS"/>
+<meta name="msapplication-TileColor" content="#070C18"/>
+<meta name="msapplication-TileImage" content="icons/icon-144x144.png"/>
+<meta name="msapplication-tap-highlight" content="no"/>
+
+<!-- ═══ OPEN GRAPH ═══ -->
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="RHSMART AXIS — SIRH Intelligent"/>
+<meta property="og:description" content="Gérez vos RH en toute simplicité : paie OHADA, congés, évaluations, GED"/>
+<meta property="og:image" content="icons/icon-512x512.png"/>
+
+<!-- ═══ MANIFEST & ICÔNES ═══ -->
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png"/>
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png"/>
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png"/>
+<link rel="apple-touch-startup-image" href="icons/icon-512x512.png"/>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{--bg:#070c18;--surface:#0e1525;--surface2:#162035;--surface3:#1c2a42;--border:#1e3050;--accent:#00e5b4;--accent2:#3b82f6;--accent3:#f59e0b;--accent4:#a855f7;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--text:#e2e8f0;--text2:#94a3b8;--text3:#475569;--radius:14px;--sidebar-w:256px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+h1,h2,h3,h4,h5{font-family:'Syne',sans-serif;letter-spacing:-0.02em;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.hidden{display:none!important;}
+.flex{display:flex;}.items-center{align-items:center;}.justify-between{justify-content:space-between;}
+.gap-2{gap:8px;}.gap-3{gap:12px;}.gap-4{gap:16px;}
+.mt-2{margin-top:8px;}.mt-3{margin-top:12px;}.mt-4{margin-top:16px;}.mt-6{margin-top:24px;}
+.mb-4{margin-bottom:16px;}.mb-6{margin-bottom:24px;}
+.text-sm{font-size:13px;}.text-xs{font-size:11px;}.font-bold{font-weight:700;}.font-semibold{font-weight:600;}
+.text-accent{color:var(--accent);}.text-success{color:var(--success);}.text-danger{color:var(--danger);}
+.text-warning{color:var(--warning);}.text-muted{color:var(--text2);}.text-accent2{color:var(--accent2);}
+.w-full{width:100%;}.text-right{text-align:right;}.text-center{text-align:center;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
+@media(max-width:960px){.grid-5,.grid-4{grid-template-columns:1fr 1fr;}.grid-3{grid-template-columns:1fr;}}
+@media(max-width:600px){.grid-2{grid-template-columns:1fr;}.grid-4{grid-template-columns:1fr;}}
+.bg-mesh{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 50% at 10% 0%,rgba(0,229,180,0.08) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 40% at 90% 100%,rgba(59,130,246,0.08) 0%,transparent 60%);}
+/* TOAST */
+#toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;animation:slideIn .3s ease;max-width:340px;border:1px solid var(--border);background:var(--surface);}
+.toast.success{border-color:var(--success);color:var(--success);}
+.toast.error{border-color:var(--danger);color:var(--danger);}
+.toast.info{border-color:var(--accent2);color:var(--accent2);}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+/* LOADER */
+#global-loader{position:fixed;inset:0;background:var(--bg);z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;transition:opacity .5s;}
+.spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loader-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+/* APP */
+#screen-app{display:flex;min-height:100vh;position:relative;z-index:1;}
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100;transition:transform .3s ease;}
+.sidebar-brand{padding:0 16px 20px;border-bottom:1px solid var(--border);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#000;font-weight:800;font-size:16px;flex-shrink:0;}
+.brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;}
+.brand-ver{font-size:10px;color:var(--accent);letter-spacing:1px;}
+.nav-section{padding:0 12px;margin-bottom:4px;}
+.nav-label{font-size:10px;color:var(--text3);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;transition:.15s;font-size:13px;font-weight:500;color:var(--text2);user-select:none;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:linear-gradient(135deg,rgba(0,229,180,0.12),rgba(59,130,246,0.08));color:var(--accent);font-weight:600;border:1px solid rgba(0,229,180,0.2);}
+.nav-icon{font-size:16px;width:20px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--danger);color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 6px;}
+.sidebar-footer{margin-top:auto;padding:16px 12px;border-top:1px solid var(--border);}
+.user-pill{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;background:var(--surface2);cursor:pointer;}
+.user-avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent4),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+/* TOPBAR */
+.topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:64px;background:rgba(7,12,24,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;z-index:90;}
+.topbar-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;}
+.topbar-bread{font-size:12px;color:var(--text3);}
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+.icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:.15s;color:var(--text2);}
+.icon-btn:hover{background:var(--surface3);color:var(--text);}
+.notif-dot::after{content:'';position:absolute;top:6px;right:6px;width:6px;height:6px;background:var(--danger);border-radius:50%;border:1px solid var(--bg);}
+.notif-pos{position:relative;}
+/* MAIN */
+.main-content{flex:1;padding:96px 32px 40px;margin-left:var(--sidebar-w);min-height:100vh;}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main-content{margin-left:0;padding:80px 16px 32px;}
+  .topbar{left:0;}
+  .sidebar-overlay{display:block!important;}
+}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99;}
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.card-title{font-size:15px;font-weight:700;}
+/* STAT CARDS */
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;transition:.2s;}
+.stat-card:hover{border-color:var(--accent);box-shadow:0 0 20px rgba(0,229,180,.08);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.stat-label{font-size:10px;color:var(--text3);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.stat-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin:8px 0 4px;line-height:1;}
+.stat-sub{font-size:12px;color:var(--text2);}
+.stat-icon{position:absolute;top:16px;right:16px;font-size:28px;opacity:.15;}
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:10px;border:none;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;transition:.2s;display:inline-flex;align-items:center;gap:7px;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,229,180,.3);}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-secondary:hover{background:var(--surface3);}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.2);}
+.btn-success{background:rgba(34,197,94,.15);color:var(--success);border:1px solid rgba(34,197,94,.2);}
+.btn-whatsapp{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;}
+.btn-whatsapp:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,211,102,.3);}
+.btn-pdf{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;}
+.btn-pdf:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(239,68,68,.3);}
+.btn-sm{padding:5px 12px;font-size:11px;border-radius:7px;}
+/* FORMS */
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase;}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:.15s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,180,.1);}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:600px){.form-row{grid-template-columns:1fr;}}
+/* TABLES */
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+thead{background:var(--surface2);}
+th{text-align:left;padding:11px 16px;color:var(--text3);font-size:11px;text-transform:uppercase;font-weight:700;letter-spacing:.8px;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:12px 16px;font-size:13px;color:var(--text2);border-bottom:1px solid rgba(30,48,80,.5);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+.td-name{color:var(--text);font-weight:600;}
+.td-actions{display:flex;gap:6px;flex-wrap:wrap;}
+/* BADGES */
+.badge{padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap;}
+.badge-success{background:rgba(34,197,94,.12);color:var(--success);}
+.badge-warning{background:rgba(245,158,11,.12);color:var(--warning);}
+.badge-danger{background:rgba(239,68,68,.12);color:var(--danger);}
+.badge-info{background:rgba(59,130,246,.12);color:var(--accent2);}
+.badge-purple{background:rgba(168,85,247,.12);color:var(--accent4);}
+.badge-accent{background:rgba(0,229,180,.12);color:var(--accent);}
+/* PROGRESS */
+.progress{height:6px;background:var(--surface3);border-radius:4px;overflow:hidden;}
+.progress-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease;}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;transform:scale(.95);transition:transform .2s;}
+.modal-overlay.open .modal{transform:scale(1);}
+.modal-lg{max-width:760px;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.modal-title{font-size:18px;font-weight:800;}
+.modal-close{background:none;border:none;color:var(--text2);cursor:pointer;font-size:20px;padding:4px;border-radius:6px;}
+.modal-close:hover{background:var(--surface2);}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:20px;flex-wrap:wrap;}
+.tab{flex:1;padding:8px;border-radius:7px;border:none;background:none;color:var(--text2);cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;font-size:12px;transition:.15s;text-align:center;min-width:80px;}
+.tab.active{background:var(--surface);color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.3);}
+/* AI */
+.ai-fab{position:fixed;bottom:28px;right:28px;z-index:500;width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--accent4),var(--accent2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 24px rgba(168,85,247,.5);transition:.2s;}
+.ai-fab:hover{transform:scale(1.08);}
+.ai-pulse{position:absolute;top:-3px;right:-3px;width:12px;height:12px;background:var(--success);border-radius:50%;border:2px solid var(--bg);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
+.ai-panel{position:fixed;bottom:96px;right:28px;z-index:500;width:380px;max-height:580px;background:var(--surface);border:1px solid rgba(168,85,247,.25);border-radius:20px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:all .3s;transform:translateY(16px);}
+.ai-panel.open{opacity:1;pointer-events:all;transform:translateY(0);}
+.ai-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(0,229,180,.06));border-radius:20px 20px 0 0;}
+.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+.ai-msg{display:flex;flex-direction:column;}
+.ai-msg.user{align-items:flex-end;}
+.ai-msg-bubble{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5;max-width:88%;}
+.ai-msg.bot .ai-msg-bubble{background:var(--surface2);color:var(--text);}
+.ai-msg.user .ai-msg-bubble{background:linear-gradient(135deg,var(--accent4),var(--accent2));color:#fff;}
+.ai-typing span{width:6px;height:6px;background:var(--text3);border-radius:50%;animation:typing 1s infinite;display:inline-block;margin:0 2px;}
+.ai-typing span:nth-child(2){animation-delay:.2s;}
+.ai-typing span:nth-child(3){animation-delay:.4s;}
+@keyframes typing{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+.ai-input-row{padding:16px;border-top:1px solid var(--border);display:flex;gap:8px;}
+.ai-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px;}
+.ai-chip{padding:4px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);font-size:11px;color:var(--text2);cursor:pointer;transition:.15s;}
+.ai-chip:hover{background:var(--surface3);color:var(--text);}
+/* NOTIF PANEL */
+.notif-panel{position:fixed;top:72px;right:16px;width:360px;background:var(--surface);border:1px solid var(--border);border-radius:16px;z-index:200;box-shadow:0 10px 40px rgba(0,0,0,.6);display:none;}
+.notif-panel.open{display:block;}
+.notif-item{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:12px;cursor:pointer;}
+.notif-item:hover{background:var(--surface2);}
+/* EMPLOYEE CARD */
+.emp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:.2s;cursor:pointer;}
+.emp-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,229,180,.08);}
+.emp-avatar{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#000;flex-shrink:0;}
+/* TIMELINE */
+.timeline{position:relative;padding-left:24px;}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border);}
+.timeline-item{position:relative;padding-bottom:20px;}
+.timeline-dot{position:absolute;left:-21px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid var(--border);background:var(--bg);}
+.timeline-dot.success{border-color:var(--success);background:rgba(34,197,94,.2);}
+.timeline-dot.warning{border-color:var(--warning);background:rgba(245,158,11,.2);}
+.timeline-dot.info{border-color:var(--accent2);background:rgba(59,130,246,.2);}
+/* ALERT */
+.alert{padding:12px 16px;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.alert-warning{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);color:var(--warning);}
+.alert-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--danger);}
+.alert-info{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:var(--accent2);}
+.alert-success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:var(--success);}
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:.2s;}
+.upload-zone:hover{border-color:var(--accent);background:rgba(0,229,180,.03);}
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 24px;color:var(--text2);}
+/* SUPER BADGE */
+.super-badge{background:linear-gradient(135deg,var(--accent3),#f97316);color:#000;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;}
+/* PAYSLIP */
+.payslip-preview{background:#fff;color:#000;border-radius:12px;padding:28px;font-family:'DM Sans',sans-serif;}
+/* MOBILE BTN */
+.mobile-menu-btn{display:none;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;cursor:pointer;font-size:18px;}
+@media(max-width:768px){.mobile-menu-btn{display:block;}}
+/* PAGE HEADER */
+.page-header{margin-bottom:28px;}
+.page-title{font-size:26px;font-weight:800;margin-bottom:4px;}
+.page-subtitle{color:var(--text2);font-size:14px;}
+</style>
+<style>
+/* AUTH — PROFIL TOPBAR */
+.user-menu-wrap{position:relative}
+.user-chip{display:flex;align-items:center;gap:10px;padding:7px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s}
+.user-chip:hover{border-color:var(--accent);background:var(--surface2)}
+.user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;color:#000}
+.user-info .uname{font-size:13px;font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-info .urole{font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-top:1px}
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px;min-width:200px;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:none;animation:dropIn .15s ease}
+.user-dropdown.open{display:block}
+@keyframes dropIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.drop-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:13px;transition:background .15s;color:var(--text)}
+.drop-item:hover{background:var(--surface2)}
+.drop-divider{height:1px;background:var(--border);margin:4px 0}
+.drop-item.danger{color:#f87171}
+.drop-item.danger:hover{background:rgba(248,113,113,0.1)}
+
+/* ROLE BADGE SIDEBAR */
+.role-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-top:6px}
+
+/* PAGE ACCESS DENIED */
+#page-denied{text-align:center;padding:80px 20px}
+.denied-icon{font-size:64px;margin-bottom:16px}
+.denied-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px}
+.denied-sub{color:var(--text2);font-size:14px;margin-bottom:24px}
+
+/* NAV ITEM HIDDEN BY ROLE */
+.nav-item.role-hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div id="toast-container"></div>
+
+<!-- LOADER -->
+<div id="global-loader">
+  <div style="text-align:center">
+    <div class="spinner" style="margin:0 auto 20px"></div>
+    <div class="loader-logo">RHSMART AXIS</div>
+    <div style="font-size:12px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-top:8px">Chargement du SIRH v2.0...</div>
+  </div>
+</div>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- NOTIFICATIONS -->
+<div class="notif-panel" id="notif-panel">
+  <div style="padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+    <span style="font-weight:700">Notifications</span>
+    <span style="font-size:12px;color:var(--accent);cursor:pointer" onclick="markAllRead()">Tout lire</span>
+  </div>
+  <div id="notif-list"></div>
+</div>
+
+<!-- APP -->
+<div id="screen-app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">🚀</div>
+    <div><div class="brand-name">RHSMART</div><div class="brand-ver">AXIS v2.0</div></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span>Tableau de bord</div>
+    <div class="nav-item" onclick="navigate('analytics')" id="nav-analytics"><span class="nav-icon">📈</span>Analytiques IA</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Employés</div>
+    <div class="nav-item" onclick="navigate('employees')" id="nav-employees"><span class="nav-icon">👥</span>Gestion Employés</div>
+    <div class="nav-item" onclick="navigate('orgchart')" id="nav-orgchart"><span class="nav-icon">🏢</span>Organigramme</div>
+    <div class="nav-item" onclick="navigate('attendance')" id="nav-attendance"><span class="nav-icon">🕒</span>Présences & Pointage</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">RH Core</div>
+    <div class="nav-item" onclick="navigate('leaves')" id="nav-leaves"><span class="nav-icon">🏖️</span>Congés & Absences <span class="nav-badge" id="badge-leaves">0</span></div>
+    <div class="nav-item" onclick="navigate('payroll')" id="nav-payroll"><span class="nav-icon">💳</span>Paie OHADA</div>
+    <div class="nav-item" onclick="navigate('evaluations')" id="nav-evaluations"><span class="nav-icon">⭐</span>Évaluations</div>
+    <div class="nav-item" onclick="navigate('documents')" id="nav-documents"><span class="nav-icon">📁</span>GED Documents</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Communication</div>
+    <div class="nav-item" onclick="navigate('announcements')" id="nav-announcements"><span class="nav-icon">📣</span>Annonces RH</div>
+    <div class="nav-item" onclick="navigate('selfservice')" id="nav-selfservice"><span class="nav-icon">👤</span>Self-Service</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Nouveautés</div>
+    <a href="/phase3-4" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;background:linear-gradient(135deg,rgba(0,229,180,0.12),rgba(59,130,246,0.08));border:1px solid rgba(0,229,180,0.25);color:#00e5b4;font-size:13px;font-weight:600;text-decoration:none;transition:.2s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+      <span style="font-size:16px;width:20px;text-align:center">⚡</span>
+      <span>Phase 3 &amp; 4</span>
+      <span style="margin-left:auto;background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:1px">NEW</span>
+    </a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Administration</div>
+    <div class="nav-item" onclick="navigate('superadmin')" id="nav-superadmin"><span class="nav-icon">🔐</span>Super Admin</div>
+    <div class="nav-item" onclick="navigate('audit')" id="nav-audit"><span class="nav-icon">📋</span>Logs & Audit</div>
+    <div class="nav-item" onclick="navigate('settings')" id="nav-settings"><span class="nav-icon">⚙️</span>Paramètres</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="user-avatar" id="sidebar-avatar">SA</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="sidebar-username">Super Admin</div>
+        <div style="font-size:11px;color:var(--text3)" id="sidebar-company">AXIS ADMIN ET RH</div>
+        <div class="role-pill" id="sidebar-role-pill" style="background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.3);color:#f87171">👑 Super Admin</div>
+      </div>
+      <span class="super-badge" id="sidebar-badge">SA</span>
+    </div>
+  </div>
+</aside>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="flex items-center gap-3">
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div>
+      <div class="topbar-title" id="topbar-title">Tableau de bord</div>
+      <div class="topbar-bread" id="topbar-bread">RHSMART AXIS</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <div class="icon-btn notif-pos notif-dot" id="notif-btn" onclick="toggleNotifications()">🔔</div>
+    <div class="icon-btn" onclick="navigate('settings')">⚙️</div>
+    <!-- USER MENU -->
+    <div class="user-menu-wrap" id="userMenuWrap">
+      <div class="user-chip" onclick="toggleUserMenu()">
+        <div class="user-avatar" id="topbar-avatar" style="background:var(--accent)">A</div>
+        <div class="user-info" id="topbar-userinfo">
+          <div class="uname" id="topbar-uname">Chargement...</div>
+          <div class="urole" id="topbar-urole" style="color:var(--accent)">—</div>
+        </div>
+        <span style="font-size:10px;color:var(--text3)">▼</span>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <div style="padding:10px 12px 8px;border-bottom:1px solid var(--border);margin-bottom:4px">
+          <div style="font-size:12px;color:var(--text2)" id="drop-email">—</div>
+          <div style="font-size:11px;font-family:monospace;margin-top:2px" id="drop-role-label">—</div>
+        </div>
+        <div class="drop-item" onclick="navigate('selfservice');toggleUserMenu()">
+          <span>👤</span> Mon profil
+        </div>
+        <div class="drop-item" onclick="navigate('settings');toggleUserMenu()">
+          <span>⚙️</span> Paramètres
+        </div>
+        <div class="drop-divider"></div>
+        <div class="drop-item danger" onclick="doLogout()">
+          <span>🚪</span> Se déconnecter
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main-content">
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page">
+  <div class="page-header">
+    <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="page-title">Tableau de bord 📊</div>
+        <div class="page-subtitle" id="dash-greeting">Bienvenue sur RHSMART AXIS</div>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-secondary btn-sm" onclick="renderDashboard()">🔄 Actualiser</button>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-employee')">+ Employé</button>
+      </div>
+    </div>
+  </div>
+  <div id="dash-alerts"></div>
+  <div class="grid-5" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Total Employés</div><div class="stat-value text-accent" id="stat-total">—</div><div class="stat-sub" id="stat-actifs">— actifs</div></div>
+    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">Présents Aujourd'hui</div><div class="stat-value text-success" id="stat-present">—</div><div class="stat-sub">Sur <span id="stat-total2">—</span> employés</div></div>
+    <div class="stat-card"><div class="stat-icon">🏖️</div><div class="stat-label">Congés en Attente</div><div class="stat-value text-warning" id="stat-pending-leaves">—</div><div class="stat-sub">À approuver</div></div>
+    <div class="stat-card"><div class="stat-icon">⏱️</div><div class="stat-label">Heures Sup. (Mois)</div><div class="stat-value text-accent2" id="stat-overtime">—</div><div class="stat-sub">Heures cumulées</div></div>
+    <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Masse Salariale</div><div class="stat-value text-accent" id="stat-payroll" style="font-size:18px">—</div><div class="stat-sub">Ce mois</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">⚡ Activité Récente</div><span class="badge badge-accent" style="font-size:10px">Live</span></div>
+      <div id="recent-activity" class="timeline"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🏖️ Congés à Approuver</div><button class="btn btn-secondary btn-sm" onclick="navigate('leaves')">Voir tout</button></div>
+      <div id="pending-leaves-list"></div>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div class="card"><div class="card-header"><div class="card-title">🏆 Top Performers</div></div><div id="top-performers"></div></div>
+    <div class="card"><div class="card-header"><div class="card-title">🔔 Alertes RH</div></div><div id="hr-alerts-list"></div></div>
+    <div class="card"><div class="card-header"><div class="card-title">📊 Évolution Paie (6 mois)</div></div><div id="salary-chart" style="display:flex;align-items:flex-end;gap:4px;height:80px;margin-top:16px"></div></div>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div id="page-analytics" class="page hidden">
+  <div class="page-header"><div class="page-title">Analytiques IA 📈</div><div class="page-subtitle">Insights intelligents sur vos ressources humaines</div></div>
+  <div class="grid-3" style="margin-bottom:20px">
+    <div class="card"><div class="card-title mb-4">🎯 Score Santé RH</div><div style="font-size:48px;font-weight:800;color:var(--accent);text-align:center;padding:16px">80%</div><div class="text-center text-sm text-muted">Basé sur 12 indicateurs</div></div>
+    <div class="card"><div class="card-title mb-4">⚠️ Risque Turnover</div><div id="turnover-risks"></div></div>
+    <div class="card"><div class="card-title mb-4">🏢 Répartition Départements</div><div id="dept-chart"></div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">🤖 Prédictions IA RH</div><span class="badge badge-purple">Claude AI</span></div>
+    <div id="ai-predictions"></div>
+  </div>
+</div>
+
+<!-- EMPLOYEES -->
+<div id="page-employees" class="page hidden">
+  <div class="page-header">
+    <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:12px">
+      <div><div class="page-title">Gestion des Employés 👥</div><div class="page-subtitle">Gérez l'ensemble de vos collaborateurs</div></div>
+      <div class="flex gap-2">
+        <button class="btn btn-secondary btn-sm" onclick="exportEmployeesPDF()">📄 Export PDF</button>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-employee')">+ Ajouter</button>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="padding:16px;margin-bottom:16px">
+    <div class="flex gap-3 flex-wrap">
+      <div style="position:relative;flex:1;min-width:200px"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%)">🔍</span><input type="text" class="form-input" style="padding-left:36px" id="emp-search" placeholder="Rechercher..." oninput="filterEmployees()"/></div>
+      <select class="form-select" style="width:160px" id="emp-dept-filter" onchange="filterEmployees()"><option value="">Tous les depts</option></select>
+      <button class="btn btn-secondary btn-sm" onclick="setEmpView('grid')">⊞ Grille</button>
+      <button class="btn btn-secondary btn-sm" onclick="setEmpView('table')">☰ Liste</button>
+    </div>
+  </div>
+  <div id="emp-grid-view"><div class="grid-3" id="employees-grid"></div></div>
+  <div id="emp-table-view" class="hidden">
+    <div class="table-wrap"><table><thead><tr><th>Employé</th><th>Poste</th><th>Département</th><th>Salaire</th><th>Statut</th><th>Score</th><th>Actions</th></tr></thead><tbody id="employees-table-body"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ORGCHART -->
+<div id="page-orgchart" class="page hidden">
+  <div class="page-header"><div class="page-title">Organigramme 🏢</div><div class="page-subtitle">Structure hiérarchique de votre organisation</div></div>
+  <div class="card"><div id="orgchart-container" style="overflow-x:auto;padding:20px;text-align:center;min-height:200px"></div></div>
+</div>
+
+<!-- ATTENDANCE -->
+<div id="page-attendance" class="page hidden">
+  <div class="page-header">
+    <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:12px">
+      <div><div class="page-title">Présences & Pointage 🕒</div><div class="page-subtitle">Suivi temps réel</div></div>
+      <div class="flex gap-2">
+        <button class="btn btn-secondary btn-sm" onclick="openModal('modal-qr-clock')">📱 QR Code</button>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-manual-clock')">+ Pointer</button>
+      </div>
+    </div>
+  </div>
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-label">Présents</div><div class="stat-value text-success" id="att-present">—</div></div>
+    <div class="stat-card"><div class="stat-label">Absents</div><div class="stat-value text-danger" id="att-absent">—</div></div>
+    <div class="stat-card"><div class="stat-label">En retard</div><div class="stat-value text-warning" id="att-late">—</div></div>
+    <div class="stat-card"><div class="stat-label">Télétravail</div><div class="stat-value text-accent2" id="att-remote">—</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Suivi Hebdomadaire</div><button class="btn btn-pdf btn-sm" onclick="exportAttendancePDF()">📄 Export PDF</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Employé</th><th>Lun</th><th>Mar</th><th>Mer</th><th>Jeu</th><th>Ven</th><th>Total</th><th>H.Sup</th><th>Statut</th></tr></thead><tbody id="attendance-table-body"></tbody></table></div>
+  </div>
+</div>
+
+<!-- LEAVES PHASE 2 — WORKFLOW MULTI-NIVEAUX -->
+<div id="page-leaves" class="page hidden">
+  <div class="page-header">
+    <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:12px">
+      <div><div class="page-title">Congés & Absences 🏖️</div><div class="page-subtitle">Workflow multi-niveaux : Employé → Manager → DRH → Notification auto</div></div>
+      <div class="flex gap-2">
+        <button class="btn btn-secondary btn-sm" onclick="exportLeavesPDF()">📄 Export PDF</button>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-leave')">+ Demande Congé</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pipeline Workflow -->
+  <div class="card" style="margin-bottom:16px;padding:20px">
+    <div class="card-title mb-4">🔄 Pipeline d'Approbation</div>
+    <div style="display:flex;align-items:center;gap:0;overflow-x:auto">
+      <div style="flex:1;min-width:120px;text-align:center;padding:12px;background:rgba(59,130,246,.1);border-radius:10px 0 0 10px;border:1px solid rgba(59,130,246,.3)">
+        <div style="font-size:20px">👤</div><div style="font-size:12px;font-weight:700;color:var(--accent2)">Employé</div>
+        <div style="font-size:11px;color:var(--text3)">Soumet la demande</div>
+        <div class="badge badge-info mt-2" id="wf-step1-count">0</div>
+      </div>
+      <div style="font-size:20px;padding:0 4px;color:var(--text3)">→</div>
+      <div style="flex:1;min-width:120px;text-align:center;padding:12px;background:rgba(245,158,11,.1);border-radius:0;border:1px solid rgba(245,158,11,.3)">
+        <div style="font-size:20px">👔</div><div style="font-size:12px;font-weight:700;color:var(--warning)">Manager N+1</div>
+        <div style="font-size:11px;color:var(--text3)">Validée en 24h</div>
+        <div class="badge badge-warning mt-2" id="wf-step2-count">0</div>
+      </div>
+      <div style="font-size:20px;padding:0 4px;color:var(--text3)">→</div>
+      <div style="flex:1;min-width:120px;text-align:center;padding:12px;background:rgba(168,85,247,.1);border-radius:0;border:1px solid rgba(168,85,247,.3)">
+        <div style="font-size:20px">🧑‍💼</div><div style="font-size:12px;font-weight:700;color:var(--accent4)">DRH</div>
+        <div style="font-size:11px;color:var(--text3)">Validation finale</div>
+        <div class="badge badge-purple mt-2" id="wf-step3-count">0</div>
+      </div>
+      <div style="font-size:20px;padding:0 4px;color:var(--text3)">→</div>
+      <div style="flex:1;min-width:120px;text-align:center;padding:12px;background:rgba(34,197,94,.1);border-radius:0 10px 10px 0;border:1px solid rgba(34,197,94,.3)">
+        <div style="font-size:20px">💬</div><div style="font-size:12px;font-weight:700;color:var(--success)">Notification</div>
+        <div style="font-size:11px;color:var(--text3)">WhatsApp + Email</div>
+        <div class="badge badge-success mt-2" id="wf-step4-count">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchLeaveTab('pending')">⏳ En attente (<span id="leave-pending-count">0</span>)</button>
+    <button class="tab" onclick="switchLeaveTab('manager')">👔 Chez Manager</button>
+    <button class="tab" onclick="switchLeaveTab('approved')">✅ Approuvés</button>
+    <button class="tab" onclick="switchLeaveTab('rejected')">❌ Refusés</button>
+    <button class="tab" onclick="switchLeaveTab('all')">📋 Tous</button>
+  </div>
+
+  <!-- Soldes congés -->
+  <div class="card">
+    <div class="card-title mb-4">📊 Soldes Congés par Employé</div>
+    <div class="grid-4" id="leave-balances"></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Employé</th><th>Type</th><th>Début</th><th>Fin</th><th>Jours</th><th>Motif</th><th>Étape Workflow</th><th>Statut</th><th>Actions</th></tr></thead>
+      <tbody id="leaves-table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PAYROLL PHASE 2 -->
+<div id="page-payroll" class="page hidden">
+  <div class="page-header">
+    <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:12px">
+      <div><div class="page-title">Paie OHADA 💳</div><div class="page-subtitle">Moteur complet CNSS · ITS progressif · IPR · Ancienneté · Transport — Droit béninois</div></div>
+      <div class="flex gap-2">
+        <button class="btn btn-secondary btn-sm" onclick="openModal('modal-payroll-params')">⚙️ Paramètres</button>
+        <button class="btn btn-primary btn-sm" onclick="generateAllPayslips()">⚡ Générer tous</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs Paie -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchPayrollTab('bulletins')">💳 Bulletins</button>
+    <button class="tab" onclick="switchPayrollTab('primes')">🎁 Primes & Indemnités</button>
+    <button class="tab" onclick="switchPayrollTab('avances')">💵 Avances sur Salaire</button>
+    <button class="tab" onclick="switchPayrollTab('declarations')">📋 Déclarations CNSS</button>
+    <button class="tab" onclick="switchPayrollTab('simulation')">🧮 Simulateur</button>
+  </div>
+
+  <!-- TAB: BULLETINS -->
+  <div id="tab-bulletins">
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div class="flex gap-3 items-center flex-wrap">
+        <div><label class="form-label" style="margin-bottom:3px">Mois</label>
+          <select class="form-select" style="width:130px" id="payroll-month">
+            <option value="1">Janvier</option><option value="2">Février</option><option value="3">Mars</option><option value="4">Avril</option><option value="5" selected>Mai</option><option value="6">Juin</option><option value="7">Juillet</option><option value="8">Août</option><option value="9">Septembre</option><option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Décembre</option>
+          </select>
+        </div>
+        <div><label class="form-label" style="margin-bottom:3px">Année</label><input type="number" class="form-input" style="width:100px" id="payroll-year" value="2026"/></div>
+        <div style="margin-top:18px"><button class="btn btn-secondary btn-sm" onclick="renderPayroll()">🔄 Calculer</button></div>
+        <div style="margin-left:auto;margin-top:18px;display:flex;gap:8px">
+          <button class="btn btn-pdf btn-sm" onclick="exportPayrollPDF()">📄 Export PDF Global</button>
+          <button class="btn btn-whatsapp btn-sm" onclick="sendAllWA()">💬 Envoyer tous (WA)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerte OHADA -->
+    <div class="alert alert-info" style="margin-bottom:16px">⚖️ <strong>Moteur OHADA Bénin :</strong> ITS progressif par tranches, CNSS 3.6% employé + 16.4% employeur, indemnité transport, prime d'ancienneté, heures supplémentaires majorées.</div>
+
+    <div class="grid-4" id="payroll-summary" style="margin-bottom:20px"></div>
+    <div class="table-wrap"><table><thead><tr><th>Employé</th><th>Brut</th><th>Transport</th><th>Ancienneté</th><th>CNSS</th><th>ITS Prog.</th><th>H.Sup</th><th>Avances</th><th>Net à Payer</th><th>Actions</th></tr></thead><tbody id="payroll-table-body"></tbody></table></div>
+  </div>
+
+  <!-- TAB: PRIMES -->
+  <div id="tab-primes" class="hidden">
+    <div class="card">
+      <div class="card-header"><div class="card-title">🎁 Gestion des Primes & Indemnités</div><button class="btn btn-primary btn-sm" onclick="openModal('modal-add-prime')">+ Ajouter Prime</button></div>
+      <div class="alert alert-info mb-4">Les primes ajoutées ici sont automatiquement intégrées dans le calcul du bulletin du mois sélectionné.</div>
+      <div class="table-wrap"><table><thead><tr><th>Employé</th><th>Type</th><th>Montant</th><th>Mois/Année</th><th>Justification</th><th>Actions</th></tr></thead><tbody id="primes-table-body"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- TAB: AVANCES -->
+  <div id="tab-avances" class="hidden">
+    <div class="card">
+      <div class="card-header"><div class="card-title">💵 Avances sur Salaire</div><button class="btn btn-primary btn-sm" onclick="openModal('modal-add-avance')">+ Nouvelle Avance</button></div>
+      <div class="alert alert-warning mb-4">⚠️ Les avances sont automatiquement déduites du prochain bulletin. Solde remboursable en plusieurs mensualités.</div>
+      <div class="table-wrap"><table><thead><tr><th>Employé</th><th>Montant</th><th>Date</th><th>Mensualités</th><th>Restant</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="avances-table-body"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- TAB: DÉCLARATIONS CNSS -->
+  <div id="tab-declarations" class="hidden">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📋 Déclarations CNSS Mensuelles</div><button class="btn btn-pdf btn-sm" onclick="exportCNSSPDF()">📄 Générer Déclaration PDF</button></div>
+      <div class="alert alert-success mb-4">✅ Conforme au formulaire officiel CNSS Bénin. Prêt à déposer.</div>
+      <div id="cnss-declaration-content"></div>
+    </div>
+  </div>
+
+  <!-- TAB: SIMULATEUR -->
+  <div id="tab-simulation" class="hidden">
+    <div class="card">
+      <div class="card-header"><div class="card-title">🧮 Simulateur de Salaire OHADA</div></div>
+      <div class="grid-2">
+        <div>
+          <div class="form-group"><label class="form-label">Salaire Brut (FCFA)</label><input type="number" class="form-input" id="sim-brut" placeholder="300000" oninput="runSimulation()"/></div>
+          <div class="form-group"><label class="form-label">Années d'ancienneté</label><input type="number" class="form-input" id="sim-anciennete" placeholder="3" oninput="runSimulation()"/></div>
+          <div class="form-group"><label class="form-label">Heures supplémentaires</label><input type="number" class="form-input" id="sim-ot-hours" placeholder="0" oninput="runSimulation()"/></div>
+          <div class="form-group"><label class="form-label">Indemnité transport (FCFA)</label><input type="number" class="form-input" id="sim-transport" value="25000" oninput="runSimulation()"/></div>
+          <button class="btn btn-primary w-full" onclick="runSimulation()">🧮 Calculer</button>
+        </div>
+        <div id="sim-result" style="background:var(--surface2);border-radius:12px;padding:20px">
+          <div class="text-center text-muted" style="padding:40px 0">Entrez un salaire brut pour voir la simulation</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EVALUATIONS -->
+<div id="page-evaluations" class="page hidden">
+  <div class="page-header">
+    <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:12px">
+      <div><div class="page-title">Évaluations ⭐</div><div class="page-subtitle">Objectifs · Notations · Feedback 360°</div></div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-eval')">+ Évaluation</button>
+    </div>
+  </div>
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-label">Score Moyen</div><div class="stat-value text-accent" id="eval-avg">—</div><div class="stat-sub">/ 5.0</div></div>
+    <div class="stat-card"><div class="stat-label">Excellent (≥4)</div><div class="stat-value text-success" id="eval-excellent">—</div></div>
+    <div class="stat-card"><div class="stat-label">À améliorer (&lt;3)</div><div class="stat-value text-warning" id="eval-low">—</div></div>
+    <div class="stat-card"><div class="stat-label">Total évaluations</div><div class="stat-value" id="eval-total">—</div></div>
+  </div>
+  <div class="table-wrap"><table><thead><tr><th>Employé</th><th>Période</th><th>Score</th><th>Objectifs</th><th>Points Forts</th><th>Commentaire</th><th>Actions</th></tr></thead><tbody id="evaluations-table-body"></tbody></table></div>
+</div>
+
+<!-- DOCUMENTS -->
+<div id="page-documents" class="page hidden">
+  <div class="page-header">
+    <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:12px">
+      <div><div class="page-title">GED — Documents 📁</div><div class="page-subtitle">Coffre-fort numérique</div></div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-upload-doc')">📤 Uploader</button>
+    </div>
+  </div>
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-label">Contrats</div><div class="stat-value text-accent" id="doc-contrats">—</div></div>
+    <div class="stat-card"><div class="stat-label">Diplômes</div><div class="stat-value text-accent2" id="doc-diplomes">—</div></div>
+    <div class="stat-card"><div class="stat-label">Attestations</div><div class="stat-value text-success" id="doc-attestations">—</div></div>
+    <div class="stat-card"><div class="stat-label">Expirent bientôt</div><div class="stat-value text-danger" id="doc-expiring">—</div></div>
+  </div>
+  <div class="card">
+    <div class="flex gap-3 mb-4 flex-wrap">
+      <div style="position:relative;flex:1;min-width:200px"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%)">🔍</span><input type="text" class="form-input" style="padding-left:36px" id="doc-search" placeholder="Rechercher..." oninput="filterDocuments()"/></div>
+      <select class="form-select" style="width:150px" id="doc-emp-filter" onchange="filterDocuments()"><option value="">Tous employés</option></select>
+      <select class="form-select" style="width:140px" id="doc-type-filter" onchange="filterDocuments()"><option value="">Tous types</option><option value="contrat">Contrats</option><option value="diplome">Diplômes</option><option value="attestation">Attestations</option><option value="bulletin">Bulletins</option><option value="autre">Autres</option></select>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Document</th><th>Employé</th><th>Type</th><th>Date</th><th>Expiration</th><th>Actions</th></tr></thead><tbody id="documents-table-body"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ANNOUNCEMENTS -->
+<div id="page-announcements" class="page hidden">
+  <div class="page-header">
+    <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:12px">
+      <div><div class="page-title">Annonces RH 📣</div><div class="page-subtitle">Communiquez avec l'équipe</div></div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-announcement')">+ Annonce</button>
+    </div>
+  </div>
+  <div id="announcements-list"></div>
+</div>
+
+<!-- SELF-SERVICE -->
+<div id="page-selfservice" class="page hidden">
+  <div class="page-header"><div class="page-title">Self-Service 👤</div><div class="page-subtitle">Votre espace personnel RH</div></div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title mb-4">👤 Mon Profil</div><div id="self-profile"></div></div>
+    <div class="card"><div class="card-title mb-4">🏖️ Mes Congés</div><div id="self-leaves"></div><button class="btn btn-primary btn-sm mt-4" onclick="openModal('modal-add-leave')">+ Demande</button></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title mb-4">💳 Mes Bulletins</div><div id="self-payslips"></div></div>
+    <div class="card"><div class="card-title mb-4">📄 Mes Documents</div><div id="self-docs"></div><button class="btn btn-primary btn-sm mt-4" onclick="generateAttestation()">📄 Attestation de travail</button></div>
+  </div>
+</div>
+
+<!-- SUPER ADMIN -->
+<div id="page-superadmin" class="page hidden">
+  <div class="page-header"><div class="page-title">Super Admin 🔐</div><div class="page-subtitle">Gestion multi-tenant</div></div>
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-label">Entreprises</div><div class="stat-value text-accent" id="sa-companies">—</div></div>
+    <div class="stat-card"><div class="stat-label">Employés Total</div><div class="stat-value text-accent2" id="sa-employees">—</div></div>
+    <div class="stat-card"><div class="stat-label">Plans Enterprise</div><div class="stat-value text-success" id="sa-enterprise">—</div></div>
+    <div class="stat-card"><div class="stat-label">Revenu Mensuel</div><div class="stat-value text-accent3" id="sa-revenue" style="font-size:18px">—</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">🏢 Toutes les Entreprises</div><button class="btn btn-primary btn-sm" onclick="openModal('modal-add-company')">+ Entreprise</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Entreprise</th><th>Admin</th><th>Plan</th><th>Employés</th><th>Statut</th><th>Créée le</th><th>Actions</th></tr></thead><tbody id="companies-table-body"></tbody></table></div>
+  </div>
+</div>
+
+<!-- AUDIT -->
+<div id="page-audit" class="page hidden">
+  <div class="page-header"><div class="page-title">Logs & Audit 📋</div><div class="page-subtitle">Traçabilité complète</div></div>
+  <div class="card"><div class="table-wrap"><table><thead><tr><th>Date/Heure</th><th>Utilisateur</th><th>Action</th><th>Détail</th></tr></thead><tbody id="audit-table-body"></tbody></table></div></div>
+</div>
+
+<!-- SETTINGS -->
+<div id="page-settings" class="page hidden">
+  <div class="page-header"><div class="page-title">Paramètres ⚙️</div><div class="page-subtitle">Configuration de votre SIRH</div></div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchSettingsTab('entreprise')">🏢 Entreprise</button>
+    <button class="tab" onclick="switchSettingsTab('paie')">💰 Paie & Taxes</button>
+    <button class="tab" onclick="switchSettingsTab('conges')">🏖️ Congés</button>
+    <button class="tab" onclick="switchSettingsTab('securite')">🔐 Sécurité</button>
+  </div>
+  <div id="settings-entreprise">
+    <div class="card">
+      <div class="card-title mb-4">Informations Entreprise</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nom Entreprise</label><input type="text" class="form-input" id="setting-company-name" value="AXIS ADMIN ET RH"/></div>
+        <div class="form-group"><label class="form-label">Email Admin</label><input type="email" class="form-input" value="aubierge500@gmail.com"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Pays</label>
+          <select class="form-select"><option value="BJ" selected>🇧🇯 Bénin</option><option value="TG">🇹🇬 Togo</option><option value="CI">🇨🇮 Côte d'Ivoire</option><option value="SN">🇸🇳 Sénégal</option><option value="CM">🇨🇲 Cameroun</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Devise</label>
+          <select class="form-select"><option value="FCFA" selected>FCFA (XOF)</option><option value="EUR">EUR (€)</option><option value="USD">USD ($)</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="toast('✅ Paramètres sauvegardés !')">💾 Sauvegarder</button>
+    </div>
+  </div>
+  <div id="settings-paie" class="hidden">
+    <div class="card">
+      <div class="card-title mb-4">Paie — Droit Béninois OHADA</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">CNSS Employé (%)</label><input type="number" class="form-input" id="setting-cnss" value="3.6" step="0.1"/></div>
+        <div class="form-group"><label class="form-label">CNSS Employeur (%)</label><input type="number" class="form-input" value="16.4" step="0.1"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">ITS/IPR (%)</label><input type="number" class="form-input" id="setting-its" value="10" step="0.5"/></div>
+        <div class="form-group"><label class="form-label">Majoration H.Sup (%)</label><input type="number" class="form-input" id="setting-ot" value="25" step="5"/></div>
+      </div>
+      <button class="btn btn-primary" onclick="toast('✅ Paramètres paie sauvegardés !')">💾 Sauvegarder</button>
+    </div>
+  </div>
+  <div id="settings-conges" class="hidden">
+    <div class="card">
+      <div class="card-title mb-4">Configuration Congés</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Congés annuels (jours)</label><input type="number" class="form-input" value="24"/></div>
+        <div class="form-group"><label class="form-label">Congés maladie (jours)</label><input type="number" class="form-input" value="15"/></div>
+      </div>
+      <button class="btn btn-primary" onclick="toast('✅ Sauvegardé !')">💾 Sauvegarder</button>
+    </div>
+  </div>
+  <div id="settings-securite" class="hidden">
+    <div class="card">
+      <div class="card-title mb-4">Sécurité & Accès</div>
+      <div class="form-group"><label class="form-label">Nouveau mot de passe</label><input type="password" class="form-input" placeholder="Nouveau mot de passe"/></div>
+      <div class="form-group"><label class="form-label">Confirmer</label><input type="password" class="form-input" placeholder="Confirmer"/></div>
+      <button class="btn btn-primary" onclick="toast('🔐 Mot de passe mis à jour !')">🔐 Mettre à jour</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- AI FAB -->
+<button class="ai-fab" onclick="toggleAI()" style="position:relative">
+  🤖<div class="ai-pulse"></div>
+</button>
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-header">
+    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent4),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">✦</div>
+    <div style="flex:1"><div style="font-weight:700;font-size:14px">Assistant Claude IA</div><div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--accent)"><div style="width:6px;height:6px;background:var(--success);border-radius:50%;animation:pulse 2s infinite"></div>Expert RH OHADA</div></div>
+    <button onclick="toggleAI()" class="modal-close">✕</button>
+  </div>
+  <div class="ai-messages" id="ai-messages">
+    <div class="ai-msg bot"><div class="ai-msg-bubble">👋 Bonjour ! Je suis votre assistant RH intelligent.<br><br>Je peux vous aider avec :<br>• Calculs de paie OHADA<br>• Analyse des présences<br>• Gestion des congés<br>• Rapports et prédictions<br><br>Posez-moi une question !</div></div>
+  </div>
+  <div class="ai-chips">
+    <div class="ai-chip" onclick="aiQuick('Calcule la masse salariale du mois')">💰 Masse salariale</div>
+    <div class="ai-chip" onclick="aiQuick('Analyse les risques de turnover')">⚠️ Turnover</div>
+    <div class="ai-chip" onclick="aiQuick('Génère un rapport RH complet')">📊 Rapport RH</div>
+    <div class="ai-chip" onclick="aiQuick('Conseils pour améliorer les performances')">🎯 Conseils</div>
+  </div>
+  <div class="ai-input-row">
+    <input type="text" id="ai-input" class="form-input" placeholder="Posez votre question RH..." onkeydown="if(event.key==='Enter')sendAIMessage()"/>
+    <button class="btn btn-primary" onclick="sendAIMessage()" style="padding:8px 14px;border-radius:9px">➤</button>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<!-- Ajouter Employé -->
+<div class="modal-overlay" id="modal-add-employee">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">👤 Ajouter un Employé</div><button class="modal-close" onclick="closeModal('modal-add-employee')">✕</button></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Prénom *</label><input type="text" class="form-input" id="add-prenom" placeholder="Kofi"/></div><div class="form-group"><label class="form-label">Nom *</label><input type="text" class="form-input" id="add-nom" placeholder="Mensah"/></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Email *</label><input type="email" class="form-input" id="add-email" placeholder="kofi@entreprise.com"/></div><div class="form-group"><label class="form-label">Téléphone</label><input type="tel" class="form-input" id="add-telephone" placeholder="+229 97000000"/></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Poste *</label><input type="text" class="form-input" id="add-poste" placeholder="Développeur Senior"/></div>
+      <div class="form-group"><label class="form-label">Département *</label><select class="form-select" id="add-departement"><option>Informatique</option><option>Finance</option><option>RH</option><option>Marketing</option><option>Commercial</option><option>Direction</option><option>Logistique</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Salaire Brut (FCFA) *</label><input type="number" class="form-input" id="add-salaire" placeholder="250000"/></div><div class="form-group"><label class="form-label">Date d'embauche</label><input type="date" class="form-input" id="add-date-embauche"/></div></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Supérieur hiérarchique</label><select class="form-select" id="add-manager"><option value="">Aucun (Direction)</option></select></div>
+      <div class="form-group"><label class="form-label">Type de contrat</label><select class="form-select" id="add-contrat"><option>CDI</option><option>CDD</option><option>Stage</option><option>Freelance</option></select></div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-add-employee')">Annuler</button><button class="btn btn-primary" onclick="addEmployee()">✅ Ajouter</button></div>
+  </div>
+</div>
+
+<!-- Congé -->
+<div class="modal-overlay" id="modal-add-leave">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🏖️ Demande de Congé</div><button class="modal-close" onclick="closeModal('modal-add-leave')">✕</button></div>
+    <div class="form-group"><label class="form-label">Employé *</label><select class="form-select" id="leave-employee-id"></select></div>
+    <div class="form-group"><label class="form-label">Type *</label><select class="form-select" id="leave-type"><option>Congé annuel</option><option>Maladie</option><option>Maternité</option><option>Paternité</option><option>Décès</option><option>Exceptionnel</option></select></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Date début *</label><input type="date" class="form-input" id="leave-start"/></div><div class="form-group"><label class="form-label">Date fin *</label><input type="date" class="form-input" id="leave-end"/></div></div>
+    <div class="form-group"><label class="form-label">Motif</label><textarea class="form-textarea" id="leave-motif" placeholder="Motif de la demande..."></textarea></div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-add-leave')">Annuler</button><button class="btn btn-primary" onclick="addLeave()">✅ Soumettre</button></div>
+  </div>
+</div>
+
+<!-- Évaluation -->
+<div class="modal-overlay" id="modal-add-eval">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">⭐ Nouvelle Évaluation</div><button class="modal-close" onclick="closeModal('modal-add-eval')">✕</button></div>
+    <div class="form-group"><label class="form-label">Employé *</label><select class="form-select" id="eval-employee-id"></select></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Période *</label><input type="text" class="form-input" id="eval-period" placeholder="Q1 2026"/></div>
+      <div class="form-group"><label class="form-label">Score</label><select class="form-select" id="eval-score"><option value="5">⭐⭐⭐⭐⭐ Excellent (5)</option><option value="4">⭐⭐⭐⭐ Très bien (4)</option><option value="3" selected>⭐⭐⭐ Bien (3)</option><option value="2">⭐⭐ À améliorer (2)</option><option value="1">⭐ Insuffisant (1)</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Objectifs atteints (%)</label><input type="number" class="form-input" id="eval-objectifs" value="80" min="0" max="100"/></div>
+    <div class="form-group"><label class="form-label">Points forts</label><input type="text" class="form-input" id="eval-strengths" placeholder="Leadership, Rigueur..."/></div>
+    <div class="form-group"><label class="form-label">Commentaire</label><textarea class="form-textarea" id="eval-comment" placeholder="Évaluation détaillée..."></textarea></div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-add-eval')">Annuler</button><button class="btn btn-primary" onclick="addEvaluation()">✅ Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- Upload Document -->
+<div class="modal-overlay" id="modal-upload-doc">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">📁 Uploader un Document</div><button class="modal-close" onclick="closeModal('modal-upload-doc')">✕</button></div>
+    <div class="form-group"><label class="form-label">Employé</label><select class="form-select" id="doc-employee-id"></select></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="doc-type"><option value="contrat">Contrat</option><option value="diplome">Diplôme</option><option value="attestation">Attestation</option><option value="bulletin">Bulletin</option><option value="autre">Autre</option></select></div>
+      <div class="form-group"><label class="form-label">Date Expiration</label><input type="date" class="form-input" id="doc-expiry"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Nom du document</label><input type="text" class="form-input" id="doc-name" placeholder="Contrat CDI 2024.pdf"/></div>
+    <div class="upload-zone" onclick="document.getElementById('doc-file').click()">
+      <div style="font-size:32px;margin-bottom:8px">📤</div>
+      <div style="font-weight:600">Cliquer pour sélectionner</div>
+      <div class="text-xs text-muted mt-2">PDF, DOC, JPG — max 10MB</div>
+      <input type="file" id="doc-file" style="display:none" accept=".pdf,.doc,.docx,.jpg,.png"/>
+    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-upload-doc')">Annuler</button><button class="btn btn-primary" onclick="uploadDocument()">📤 Uploader</button></div>
+  </div>
+</div>
+
+<!-- Annonce -->
+<div class="modal-overlay" id="modal-add-announcement">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">📣 Nouvelle Annonce</div><button class="modal-close" onclick="closeModal('modal-add-announcement')">✕</button></div>
+    <div class="form-group"><label class="form-label">Titre *</label><input type="text" class="form-input" id="ann-title" placeholder="Réunion générale..."/></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="ann-type"><option value="info">📢 Information</option><option value="important">⚠️ Important</option><option value="urgence">🔴 Urgent</option><option value="conge">🏖️ Congés</option></select></div>
+      <div class="form-group"><label class="form-label">Destinataires</label><select class="form-select" id="ann-target"><option value="all">Tous les employés</option><option value="managers">Managers</option><option value="rh">Équipe RH</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Message *</label><textarea class="form-textarea" id="ann-body" placeholder="Contenu de l'annonce..." style="min-height:100px"></textarea></div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-add-announcement')">Annuler</button><button class="btn btn-primary" onclick="addAnnouncement()">📣 Publier</button></div>
+  </div>
+</div>
+
+<!-- Super Admin — Entreprise -->
+<div class="modal-overlay" id="modal-add-company">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🏢 Nouvelle Entreprise</div><button class="modal-close" onclick="closeModal('modal-add-company')">✕</button></div>
+    <div class="form-group"><label class="form-label">Nom *</label><input type="text" class="form-input" id="comp-name" placeholder="MonEntreprise SARL"/></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Email Admin *</label><input type="email" class="form-input" id="comp-email" placeholder="admin@entreprise.com"/></div>
+      <div class="form-group"><label class="form-label">Plan</label><select class="form-select" id="comp-plan"><option value="starter">Starter</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option></select></div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-add-company')">Annuler</button><button class="btn btn-primary" onclick="addCompany()">✅ Créer</button></div>
+  </div>
+</div>
+
+<!-- Bulletin Preview -->
+<div class="modal-overlay" id="modal-payslip">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">💳 Bulletin de Paie</div><button class="modal-close" onclick="closeModal('modal-payslip')">✕</button></div>
+    <div id="payslip-preview-content"></div>
+    <div class="modal-actions">
+      <button class="btn btn-whatsapp" onclick="sharePayslipWA()">💬 Envoyer WhatsApp</button>
+      <button class="btn btn-pdf" onclick="downloadPayslipPDF()">📄 Télécharger PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR Pointage -->
+<div class="modal-overlay" id="modal-qr-clock">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">📱 QR Code Pointage</div><button class="modal-close" onclick="closeModal('modal-qr-clock')">✕</button></div>
+    <div style="text-align:center;padding:20px">
+      <div style="width:200px;height:200px;background:var(--surface2);border-radius:16px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:64px;border:2px dashed var(--accent)">📱</div>
+      <div class="mt-4 font-bold">Scannez pour pointer</div>
+      <div class="text-sm text-muted mt-2">rhsmart-axis.vercel.app/clock</div>
+      <div class="alert alert-info mt-4">📍 Géolocalisation vérifiée automatiquement</div>
+    </div>
+  </div>
+</div>
+
+<!-- Pointer Manuellement -->
+<div class="modal-overlay" id="modal-manual-clock">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🕒 Pointage Manuel</div><button class="modal-close" onclick="closeModal('modal-manual-clock')">✕</button></div>
+    <div class="form-group"><label class="form-label">Employé</label><select class="form-select" id="clock-employee-id"></select></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="clock-type"><option value="entree">Entrée</option><option value="sortie">Sortie</option></select></div>
+      <div class="form-group"><label class="form-label">Heure</label><input type="datetime-local" class="form-input" id="clock-time"/></div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-manual-clock')">Annuler</button><button class="btn btn-primary" onclick="saveClocking()">✅ Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- Modal Prime -->
+<div class="modal-overlay" id="modal-add-prime">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🎁 Ajouter une Prime</div><button class="modal-close" onclick="closeModal('modal-add-prime')">✕</button></div>
+    <div class="form-group"><label class="form-label">Employé *</label><select class="form-select" id="prime-employee-id"></select></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Type de Prime</label>
+        <select class="form-select" id="prime-type">
+          <option value="Performance">Prime de performance</option>
+          <option value="Transport">Indemnité transport</option>
+          <option value="Logement">Indemnité logement</option>
+          <option value="Ancienneté">Prime d'ancienneté</option>
+          <option value="Fin Année">Gratification fin d'année</option>
+          <option value="Spéciale">Prime spéciale</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Montant (FCFA) *</label><input type="number" class="form-input" id="prime-montant" placeholder="50000"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Mois</label><select class="form-select" id="prime-month"><option value="5" selected>Mai</option><option value="6">Juin</option><option value="7">Juillet</option></select></div>
+      <div class="form-group"><label class="form-label">Année</label><input type="number" class="form-input" id="prime-year" value="2026"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Justification</label><input type="text" class="form-input" id="prime-justif" placeholder="Dépassement d'objectifs Q1..."/></div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-add-prime')">Annuler</button><button class="btn btn-primary" onclick="addPrime()">✅ Ajouter</button></div>
+  </div>
+</div>
+
+<!-- Modal Avance -->
+<div class="modal-overlay" id="modal-add-avance">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">💵 Avance sur Salaire</div><button class="modal-close" onclick="closeModal('modal-add-avance')">✕</button></div>
+    <div class="form-group"><label class="form-label">Employé *</label><select class="form-select" id="avance-employee-id"></select></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Montant (FCFA) *</label><input type="number" class="form-input" id="avance-montant" placeholder="100000"/></div>
+      <div class="form-group"><label class="form-label">Remboursement en (mois)</label>
+        <select class="form-select" id="avance-mensualites"><option value="1">1 mois (déduction totale)</option><option value="2">2 mois</option><option value="3">3 mois</option><option value="6">6 mois</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Motif</label><textarea class="form-textarea" id="avance-motif" placeholder="Motif de la demande..."></textarea></div>
+    <div class="alert alert-warning">⚠️ La déduction commencera sur le prochain bulletin de paie.</div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-add-avance')">Annuler</button><button class="btn btn-primary" onclick="addAvance()">✅ Accorder l'avance</button></div>
+  </div>
+</div>
+
+<!-- Modal Workflow Approuver Congé -->
+<div class="modal-overlay" id="modal-workflow-approve">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">✅ Validation Workflow</div><button class="modal-close" onclick="closeModal('modal-workflow-approve')">✕</button></div>
+    <div id="wf-modal-content"></div>
+    <div class="form-group"><label class="form-label">Commentaire (optionnel)</label><textarea class="form-textarea" id="wf-comment" placeholder="Commentaire pour l'employé..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-workflow-approve')">Annuler</button>
+      <button class="btn btn-danger" onclick="workflowReject()">✗ Refuser</button>
+      <button class="btn btn-success" onclick="workflowApprove()">✓ Approuver & Notifier</button>
+    </div>
+  </div>
+</div>
+
+<!-- Paramètres Paie -->
+<div class="modal-overlay" id="modal-payroll-params">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">⚙️ Paramètres Paie OHADA</div><button class="modal-close" onclick="closeModal('modal-payroll-params')">✕</button></div>
+    <div class="alert alert-info">Paramètres selon le droit du travail béninois (OHADA)</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">CNSS Employé (%)</label><input type="number" class="form-input" value="3.6" id="pm-cnss" step="0.1"/></div>
+      <div class="form-group"><label class="form-label">CNSS Employeur (%)</label><input type="number" class="form-input" value="16.4" step="0.1"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">ITS/IPR (%)</label><input type="number" class="form-input" value="10" id="pm-its" step="0.5"/></div>
+      <div class="form-group"><label class="form-label">Majoration H.Sup (%)</label><input type="number" class="form-input" value="25" id="pm-ot" step="5"/></div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-payroll-params')">Annuler</button><button class="btn btn-primary" onclick="savePayrollParams()">💾 Sauvegarder</button></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  RHSMART AXIS v2.0 — SIRH COMPLET
+//  Phases 1-4 intégrées
+// ═══════════════════════════════════════════
+
+// SUPABASE
+const SUPABASE_URL='https://uaspipsffvtbiydswqwt.supabase.co';
+const SUPABASE_ANON='sb_publishable_fop-_msYrKe-q7wEMkL-Hw_5RIg8EIo';
+let sb;
+try{sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);}catch(e){console.warn('Supabase offline');}
+
+// STATE
+let APP={
+  employees:[],leaves:[],bulletins:[],evaluations:[],documents:[],
+  announcements:[],companies:[],audit:[],notifications:[],
+  payrollParams:{cnss:3.6,cnssEmployeur:16.4,its:10,ot:25,transport:25000,anciennete_taux:2},
+  primes:[],avances:[],
+  currentPayslip:null,empView:'grid',leaveTab:'pending',payrollTab:'bulletins',
+  workflowLeaveId:null
+};
+
+// TOAST
+function toast(msg,type='success'){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;t.innerHTML=msg;c.appendChild(t);
+  setTimeout(()=>t.remove(),4000);
+}
+
+// MODAL
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  if(/leave|eval|doc|clock/.test(id))populateSelects();
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// NAVIGATION
+const PAGE_TITLES={dashboard:'Tableau de bord',analytics:'Analytiques IA',employees:'Gestion Employés',orgchart:'Organigramme',attendance:'Présences & Pointage',leaves:'Congés & Absences',payroll:'Paie OHADA',evaluations:'Évaluations',documents:'GED Documents',announcements:'Annonces RH',selfservice:'Self-Service',superadmin:'Super Admin',audit:'Logs & Audit',settings:'Paramètres'};
+function navigate(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  const el=document.getElementById('page-'+page);
+  if(el)el.classList.remove('hidden');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const nav=document.getElementById('nav-'+page);
+  if(nav)nav.classList.add('active');
+  document.getElementById('topbar-title').textContent=PAGE_TITLES[page]||page;
+  document.getElementById('topbar-bread').textContent='RHSMART AXIS — '+(PAGE_TITLES[page]||page);
+  closeSidebar();
+  logAudit('Navigation','Page: '+page);
+  const renders={dashboard:renderDashboard,analytics:renderAnalytics,employees:renderEmployees,orgchart:renderOrgChart,attendance:renderAttendance,leaves:renderLeaves,payroll:renderPayroll,evaluations:renderEvaluations,documents:renderDocuments,announcements:renderAnnouncements,selfservice:renderSelfService,superadmin:renderSuperAdmin,audit:renderAudit};
+  if(renders[page])renders[page]();
+}
+
+// SIDEBAR
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebar-overlay').style.display='block';}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').style.display='none';}
+
+// AUDIT
+function logAudit(action,detail=''){APP.audit.unshift({date:new Date().toLocaleString('fr-FR'),user:'Super Admin',action,detail});if(APP.audit.length>100)APP.audit.pop();}
+
+// NOTIFICATIONS
+function addNotif(icon,title,msg){APP.notifications.unshift({icon,title,msg,date:new Date().toLocaleTimeString('fr-FR')});document.getElementById('notif-btn').classList.add('notif-dot');}
+function toggleNotifications(){const p=document.getElementById('notif-panel');p.classList.toggle('open');renderNotifs();}
+function renderNotifs(){
+  const list=document.getElementById('notif-list');
+  if(!APP.notifications.length){list.innerHTML='<div class="empty-state" style="padding:20px"><div>🔔</div><div class="text-sm text-muted">Aucune notification</div></div>';return;}
+  list.innerHTML=APP.notifications.slice(0,8).map(n=>`<div class="notif-item"><div style="font-size:20px">${n.icon}</div><div><div style="font-size:13px;font-weight:600">${n.title}</div><div class="text-xs text-muted">${n.msg}</div><div class="text-xs text-muted">${n.date}</div></div></div>`).join('');
+}
+function markAllRead(){APP.notifications=[];document.getElementById('notif-btn').classList.remove('notif-dot');document.getElementById('notif-panel').classList.remove('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('#notif-panel')&&!e.target.closest('#notif-btn'))document.getElementById('notif-panel').classList.remove('open');});
+
+// LOAD DATA
+async function loadAllData(){
+  try{
+    if(!sb)throw new Error('No Supabase');
+    const[emps,leaves,evals,docs]=await Promise.all([sb.from('employes').select('*'),sb.from('conges').select('*'),sb.from('evaluations').select('*'),sb.from('documents').select('*')]);
+    if(emps.data&&emps.data.length)APP.employees=emps.data;
+    if(leaves.data&&leaves.data.length)APP.leaves=leaves.data;
+    if(evals.data&&evals.data.length)APP.evaluations=evals.data;
+    if(docs.data&&docs.data.length)APP.documents=docs.data;
+    if(!APP.employees.length)throw new Error('Empty');
+  }catch(e){
+    APP.employees=[
+      {id:1,prenom:'Adjoua',nom:'Koffi',email:'adjoua@axis.bj',poste:'DRH',departement:'Direction',salaire:450000,telephone:'+229 97 01 01 01',date_embauche:'2021-03-15',contrat:'CDI',statut:'actif',taux_horaire:2558,manager_id:null},
+      {id:2,prenom:'Jean',nom:'Mensah',email:'jean@axis.bj',poste:'Dev Senior',departement:'Informatique',salaire:280000,telephone:'+229 97 02 02 02',date_embauche:'2022-06-01',contrat:'CDI',statut:'actif',taux_horaire:1591,manager_id:1},
+      {id:3,prenom:'Amina',nom:'Touré',email:'amina@axis.bj',poste:'Comptable',departement:'Finance',salaire:220000,telephone:'+229 97 03 03 03',date_embauche:'2022-09-15',contrat:'CDI',statut:'actif',taux_horaire:1250,manager_id:1},
+      {id:4,prenom:'Kofi',nom:'Agbodo',email:'kofi@axis.bj',poste:'Commercial',departement:'Commercial',salaire:195000,telephone:'+229 97 04 04 04',date_embauche:'2023-01-10',contrat:'CDI',statut:'actif',taux_horaire:1108,manager_id:1}
+    ];
+    APP.leaves=[
+      {id:1,employee_id:2,type_conge:'Congé annuel',date_debut:'2026-05-20',date_fin:'2026-05-30',motif:'Vacances familiales',statut:'en attente',created_at:'2026-05-14'},
+      {id:2,employee_id:3,type_conge:'Maladie',date_debut:'2026-05-16',date_fin:'2026-05-18',motif:'Grippe',statut:'approuvé',created_at:'2026-05-13'},
+      {id:3,employee_id:4,type_conge:'Congé annuel',date_debut:'2026-06-01',date_fin:'2026-06-15',motif:'Voyage',statut:'en attente',created_at:'2026-05-12'}
+    ];
+    APP.evaluations=[
+      {id:1,employee_id:1,period:'Q1 2026',score:5,objectifs_pct:95,comment:'Excellente performance',strengths:'Leadership, Vision'},
+      {id:2,employee_id:2,period:'Q1 2026',score:4,objectifs_pct:88,comment:'Très bon travail',strengths:'Rigueur, Innovation'},
+      {id:3,employee_id:3,period:'Q1 2026',score:4,objectifs_pct:82,comment:'Fiable et précise',strengths:'Précision'},
+      {id:4,employee_id:4,period:'Q1 2026',score:3,objectifs_pct:70,comment:'Bons résultats',strengths:'Relationnel'}
+    ];
+    APP.documents=[
+      {id:1,employee_id:1,nom:'Contrat CDI DRH.pdf',type:'contrat',date_upload:'2021-03-15',expiration:null},
+      {id:2,employee_id:2,nom:'Diplôme Master Info.pdf',type:'diplome',date_upload:'2022-06-01',expiration:null},
+      {id:3,employee_id:3,nom:'Contrat CDI Compta.pdf',type:'contrat',date_upload:'2022-09-15',expiration:'2026-09-14'}
+    ];
+    APP.announcements=[
+      {id:1,title:'Réunion générale Mai 2026',type:'important',body:'La réunion générale de mai se tiendra le vendredi 22 mai à 9h.',target:'all',date:'2026-05-14',author:'Super Admin'},
+      {id:2,title:'Fermeture exceptionnelle',type:'info',body:'Fermeture le lundi 18 mai pour maintenance.',target:'all',date:'2026-05-13',author:'Super Admin'}
+    ];
+    APP.companies=[
+      {id:1,nom:'AXIS ADMIN ET RH',email_admin:'aubierge500@gmail.com',plan:'Enterprise',actif:true,employes:4,created_at:'2026-01-01'},
+      {id:2,nom:'SARL BENIN TECH',email_admin:'admin@benintech.com',plan:'Pro',actif:true,employes:12,created_at:'2026-02-15'},
+      {id:3,nom:'ONG AFRIQUE DIGITAL',email_admin:'contact@africadigital.org',plan:'Starter',actif:true,employes:8,created_at:'2026-03-01'}
+    ];
+  }
+  const pending=APP.leaves.filter(l=>l.statut==='en attente').length;
+  document.getElementById('badge-leaves').textContent=pending;
+  populateSelects();
+  populateDeptFilter();
+}
+
+function populateSelects(){
+  const ids=['leave-employee-id','eval-employee-id','doc-employee-id','clock-employee-id','add-manager'];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const cur=el.value;
+    el.innerHTML=(id==='add-manager'?'<option value="">Aucun (Direction)</option>':'')+APP.employees.map(e=>`<option value="${e.id}">${e.prenom} ${e.nom} — ${e.poste}</option>`).join('');
+    if(cur)el.value=cur;
+  });
+  const df=document.getElementById('doc-emp-filter');
+  if(df)df.innerHTML='<option value="">Tous employés</option>'+APP.employees.map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');
+}
+function populateDeptFilter(){
+  const depts=[...new Set(APP.employees.map(e=>e.departement))];
+  const df=document.getElementById('emp-dept-filter');
+  if(df)df.innerHTML='<option value="">Tous les depts</option>'+depts.map(d=>`<option value="${d}">${d}</option>`).join('');
+}
+
+// ═══ DASHBOARD ═══
+function renderDashboard(){
+  const now=new Date();
+  const h=now.getHours();
+  const gr=h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
+  document.getElementById('dash-greeting').textContent=`${gr} ! Vue RH du ${now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`;
+  const total=APP.employees.length;
+  const actifs=APP.employees.filter(e=>e.statut==='actif').length;
+  const pending=APP.leaves.filter(l=>l.statut==='en attente').length;
+  const ms=APP.employees.reduce((s,e)=>s+(e.salaire||0),0);
+  const ot=APP.employees.reduce((s,e)=>s+Math.floor(Math.random()*6+2),0);
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-actifs').textContent=actifs+' actifs';
+  document.getElementById('stat-total2').textContent=total;
+  document.getElementById('stat-present').textContent=actifs-1;
+  document.getElementById('stat-pending-leaves').textContent=pending;
+  document.getElementById('stat-overtime').textContent=ot+'h';
+  document.getElementById('stat-payroll').textContent=ms.toLocaleString('fr-FR')+' FCFA';
+  // Alertes
+  const alerts=[];
+  if(pending>0)alerts.push(`<div class="alert alert-warning">⏳ ${pending} demande(s) de congé en attente d'approbation</div>`);
+  const exp=APP.documents.filter(d=>d.expiration&&new Date(d.expiration)<new Date(Date.now()+30*86400000));
+  if(exp.length)alerts.push(`<div class="alert alert-danger">📄 ${exp.length} document(s) expirent dans moins de 30 jours</div>`);
+  document.getElementById('dash-alerts').innerHTML=alerts.join('');
+  // Activité récente
+  const acts=[{dot:'success',text:'<strong>Amina Touré</strong> — congé maladie approuvé',time:'Il y a 2h'},{dot:'info',text:'<strong>Jean Mensah</strong> — demande de congé soumise',time:'Il y a 4h'},{dot:'warning',text:'<strong>Kofi Agbodo</strong> — évaluation Q1 enregistrée',time:'Hier'},{dot:'success',text:'<strong>4 bulletins</strong> générés pour Avril 2026',time:'Il y a 2 jours'}];
+  document.getElementById('recent-activity').innerHTML=acts.map(a=>`<div class="timeline-item"><div class="timeline-dot ${a.dot}"></div><div class="text-sm">${a.text}</div><div class="text-xs text-muted mt-2">${a.time}</div></div>`).join('');
+  // Congés en attente
+  const pl=APP.leaves.filter(l=>l.statut==='en attente').slice(0,3);
+  document.getElementById('pending-leaves-list').innerHTML=pl.length?pl.map(l=>{
+    const emp=APP.employees.find(e=>e.id===l.employee_id);
+    const days=Math.ceil((new Date(l.date_fin)-new Date(l.date_debut))/86400000)+1;
+    return `<div class="flex items-center justify-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div><div class="font-semibold text-sm">${emp?emp.prenom+' '+emp.nom:'Employé'}</div><div class="text-xs text-muted">${l.type_conge} — ${days}j</div></div>
+      <div class="flex gap-2"><button class="btn btn-success btn-sm" onclick="approveLeave(${l.id})">✓</button><button class="btn btn-danger btn-sm" onclick="rejectLeave(${l.id})">✗</button></div>
+    </div>`;
+  }).join(''):'<div class="empty-state" style="padding:20px"><div class="text-sm text-muted">✅ Aucun congé en attente</div></div>';
+  // Top performers
+  const sorted=[...APP.evaluations].sort((a,b)=>b.score-a.score).slice(0,3);
+  document.getElementById('top-performers').innerHTML=sorted.map((ev,i)=>{
+    const emp=APP.employees.find(e=>e.id===ev.employee_id);
+    return `<div class="flex items-center gap-3" style="padding:8px 0"><span style="font-size:20px">${['🥇','🥈','🥉'][i]}</span><div style="flex:1"><div class="font-semibold text-sm">${emp?emp.prenom+' '+emp.nom:'—'}</div><div class="text-xs">⭐ ${ev.score}/5 — ${ev.objectifs_pct}% objectifs</div></div></div>`;
+  }).join('');
+  // Alertes RH
+  document.getElementById('hr-alerts-list').innerHTML=`
+    <div class="flex gap-2 text-sm" style="padding:6px 0">📅 <span>Réunion mensuelle — <strong>22 Mai</strong></span></div>
+    <div class="flex gap-2 text-sm" style="padding:6px 0">⚠️ <span>Contrat <strong>Amina</strong> expire dans 4 mois</span></div>
+    <div class="flex gap-2 text-sm" style="padding:6px 0">🎂 <span><strong>Jean Mensah</strong> — anniversaire le 20 Mai</span></div>
+    <div class="flex gap-2 text-sm" style="padding:6px 0">📋 <span>Évaluations Q2 à planifier</span></div>`;
+  // Mini chart
+  const vals=[1180000,1240000,1195000,1320000,1280000,ms];
+  const maxV=Math.max(...vals);
+  document.getElementById('salary-chart').innerHTML=vals.map((v,i)=>{
+    const months=['Déc','Jan','Fév','Mar','Avr','Mai'];
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="flex:1;display:flex;align-items:flex-end;width:100%"><div style="width:100%;height:${Math.round(v/maxV*100)}%;background:${i===5?'var(--accent)':'var(--accent2)'};border-radius:4px 4px 0 0;opacity:${i===5?1:.5}"></div></div>
+      <div class="text-xs text-muted">${months[i]}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══ ANALYTICS ═══
+function renderAnalytics(){
+  const risks=APP.employees.map(e=>{
+    const ev=APP.evaluations.find(x=>x.employee_id===e.id);
+    const score=ev?ev.score:3;
+    const tenure=e.date_embauche?Math.floor((Date.now()-new Date(e.date_embauche))/(365.25*86400000)):2;
+    const risk=score<3?'Élevé':tenure<1?'Moyen':'Faible';
+    const color=risk==='Élevé'?'danger':risk==='Moyen'?'warning':'success';
+    return{emp:e,risk,color};
+  });
+  document.getElementById('turnover-risks').innerHTML=risks.map(r=>`<div class="flex items-center justify-between" style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="text-sm">${r.emp.prenom} ${r.emp.nom}</span><span class="badge badge-${r.color}">${r.risk}</span></div>`).join('');
+  const dc={};APP.employees.forEach(e=>{dc[e.departement]=(dc[e.departement]||0)+1;});
+  const tot=APP.employees.length||1;
+  document.getElementById('dept-chart').innerHTML=Object.entries(dc).map(([d,c])=>`<div class="flex items-center gap-2 mb-2"><div class="text-sm" style="width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d}</div><div style="flex:1"><div class="progress"><div class="progress-bar" style="width:${Math.round(c/tot*100)}%"></div></div></div><div class="text-xs text-muted" style="width:20px">${c}</div></div>`).join('');
+  const ms=APP.employees.reduce((s,e)=>s+(e.salaire||0),0);
+  const high=risks.filter(r=>r.risk==='Élevé').length;
+  document.getElementById('ai-predictions').innerHTML=`
+    <div class="grid-3">
+      <div style="padding:16px;background:var(--surface2);border-radius:10px"><div class="text-xs text-muted mb-2">📈 Masse Salariale N+1</div><div class="font-bold text-accent">${Math.round(ms*1.08).toLocaleString('fr-FR')} FCFA</div><div class="text-xs text-muted">Projection +8%</div></div>
+      <div style="padding:16px;background:var(--surface2);border-radius:10px"><div class="text-xs text-muted mb-2">⚠️ Risques de Départ</div><div class="font-bold text-warning">${high} employé(s)</div><div class="text-xs text-muted">Attention requise</div></div>
+      <div style="padding:16px;background:var(--surface2);border-radius:10px"><div class="text-xs text-muted mb-2">🎯 Taux Rétention</div><div class="font-bold text-success">${Math.round(100-high/tot*100)}%</div><div class="text-xs text-muted">Estimation 12 mois</div></div>
+    </div>
+    <div class="alert alert-info mt-4">🤖 <strong>Recommandation IA :</strong> Planifiez des entretiens individuels avec les ${high} employé(s) à risque. Une augmentation de 8-12% pourrait réduire le turnover de 40%.</div>`;
+}
+
+// ═══ EMPLOYEES ═══
+const COLORS=['#00e5b4','#3b82f6','#f59e0b','#a855f7','#ef4444','#22c55e'];
+function renderEmployees(){filterEmployees();}
+function filterEmployees(){
+  const q=(document.getElementById('emp-search')?.value||'').toLowerCase();
+  const dept=document.getElementById('emp-dept-filter')?.value||'';
+  const f=APP.employees.filter(e=>{
+    const m=!q||`${e.prenom} ${e.nom} ${e.poste}`.toLowerCase().includes(q);
+    const md=!dept||e.departement===dept;
+    return m&&md;
+  });
+  const ini=e=>(e.prenom[0]||'')+(e.nom[0]||'');
+  // Grid
+  document.getElementById('employees-grid').innerHTML=f.length?f.map((e,i)=>{
+    const ev=APP.evaluations.find(x=>x.employee_id===e.id);
+    const stars=ev?'⭐'.repeat(ev.score):'';
+    return `<div class="emp-card" onclick="openPayslipModal(${e.id})">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="emp-avatar" style="background:linear-gradient(135deg,${COLORS[i%6]},${COLORS[(i+2)%6]})">${ini(e)}</div>
+        <div style="flex:1;min-width:0"><div class="font-bold" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.prenom} ${e.nom}</div><div class="text-xs text-muted">${e.poste}</div></div>
+        <span class="badge badge-success">${e.statut||'actif'}</span>
+      </div>
+      <div class="text-xs text-muted mb-1">🏢 ${e.departement}</div>
+      <div class="text-xs text-muted mb-1">📧 ${e.email}</div>
+      <div class="text-xs text-muted mb-3">📞 ${e.telephone||'—'}</div>
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-bold text-accent">${(e.salaire||0).toLocaleString('fr-FR')} FCFA</div>
+        <div>${stars}</div>
+      </div>
+      <div class="flex gap-2 mt-3">
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openPayslipModal(${e.id})">💳 Bulletin</button>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openModal('modal-add-eval');document.getElementById('eval-employee-id').value=${e.id}">⭐ Éval</button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteEmployee(${e.id})">🗑️</button>
+      </div>
+    </div>`;
+  }).join(''):'<div class="empty-state"><div style="font-size:48px;opacity:.5">👤</div><div>Aucun employé trouvé</div></div>';
+  // Table
+  document.getElementById('employees-table-body').innerHTML=f.map((e,i)=>{
+    const ev=APP.evaluations.find(x=>x.employee_id===e.id);
+    const stars=ev?'⭐'.repeat(ev.score):'—';
+    return `<tr>
+      <td><div class="flex items-center gap-2"><div class="emp-avatar" style="width:32px;height:32px;font-size:12px;border-radius:8px;background:linear-gradient(135deg,${COLORS[i%6]},${COLORS[(i+2)%6]})">${ini(e)}</div><div><div class="td-name">${e.prenom} ${e.nom}</div><div class="text-xs text-muted">${e.email}</div></div></div></td>
+      <td>${e.poste}</td><td><span class="badge badge-info">${e.departement}</span></td>
+      <td class="font-semibold">${(e.salaire||0).toLocaleString('fr-FR')} FCFA</td>
+      <td><span class="badge badge-success">${e.statut||'actif'}</span></td>
+      <td>${stars}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openPayslipModal(${e.id})">💳</button>
+        <button class="btn btn-secondary btn-sm" onclick="openModal('modal-add-eval');document.getElementById('eval-employee-id').value=${e.id}">⭐</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEmployee(${e.id})">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function setEmpView(v){APP.empView=v;document.getElementById('emp-grid-view').classList.toggle('hidden',v!=='grid');document.getElementById('emp-table-view').classList.toggle('hidden',v!=='table');}
+
+async function addEmployee(){
+  const prenom=document.getElementById('add-prenom').value.trim();
+  const nom=document.getElementById('add-nom').value.trim();
+  const email=document.getElementById('add-email').value.trim();
+  if(!prenom||!nom||!email){toast('Remplissez les champs obligatoires (*)','error');return;}
+  const sal=parseInt(document.getElementById('add-salaire').value)||0;
+  const emp={id:Date.now(),prenom,nom,email,telephone:document.getElementById('add-telephone').value,poste:document.getElementById('add-poste').value,departement:document.getElementById('add-departement').value,salaire:sal,date_embauche:document.getElementById('add-date-embauche').value,contrat:document.getElementById('add-contrat').value,statut:'actif',taux_horaire:Math.round(sal/(22*8))};
+  try{if(sb)await sb.from('employes').insert([emp]);}catch(e){}
+  APP.employees.push(emp);
+  closeModal('modal-add-employee');
+  toast(`✅ ${prenom} ${nom} ajouté(e) avec succès !`);
+  addNotif('👤','Nouvel employé',`${prenom} ${nom} a rejoint l'équipe`);
+  logAudit('Ajout employé',`${prenom} ${nom}`);
+  renderEmployees();renderDashboard();populateSelects();populateDeptFilter();
+}
+function deleteEmployee(id){
+  if(!confirm('Supprimer cet employé ?'))return;
+  APP.employees=APP.employees.filter(e=>e.id!==id);
+  toast('Employé supprimé','info');logAudit('Suppression employé','ID:'+id);renderEmployees();
+}
+
+// ═══ ORGCHART ═══
+function renderOrgChart(){
+  const dirs=APP.employees.filter(e=>!e.manager_id);
+  const getSubs=mid=>APP.employees.filter(e=>e.manager_id===mid);
+  const LCOLS=['var(--accent)','var(--accent2)','var(--accent4)','var(--accent3)'];
+  function rNode(e,lv=0){
+    const subs=getSubs(e.id);
+    return `<div style="display:inline-flex;flex-direction:column;align-items:center;gap:0;margin:0 8px">
+      <div style="background:var(--surface2);border:2px solid ${LCOLS[lv%4]};border-radius:10px;padding:12px 16px;min-width:130px;text-align:center">
+        <div style="font-size:16px;margin-bottom:4px">${['👑','👤','💼','🔧'][lv%4]}</div>
+        <div style="font-weight:700;font-size:12px">${e.prenom} ${e.nom}</div>
+        <div style="font-size:10px;color:var(--text3)">${e.poste}</div>
+      </div>
+      ${subs.length?`<div style="width:2px;height:20px;background:var(--border)"></div><div style="display:flex;gap:0;position:relative"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--border)"></div>${subs.map(s=>rNode(s,lv+1)).join('')}</div>`:''}
+    </div>`;
+  }
+  document.getElementById('orgchart-container').innerHTML=`<div style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap">${dirs.map(d=>rNode(d)).join('')}</div>`;
+}
+
+// ═══ ATTENDANCE ═══
+function renderAttendance(){
+  const tot=APP.employees.length;
+  document.getElementById('att-present').textContent=tot-1;
+  document.getElementById('att-absent').textContent='1';
+  document.getElementById('att-late').textContent='2';
+  document.getElementById('att-remote').textContent='0';
+  const hs=[[8,8,9,8,7],[7,8,8,9,8],[8,8,7,8,9],[9,8,8,7,8]];
+  document.getElementById('attendance-table-body').innerHTML=APP.employees.map((e,i)=>{
+    const h=hs[i%hs.length];const t=h.reduce((a,b)=>a+b,0);const ot=Math.max(0,t-40);
+    return `<tr><td class="td-name">${e.prenom} ${e.nom}</td>${h.map(v=>`<td>${v}h</td>`).join('')}<td class="font-bold">${t}h</td><td class="${ot>0?'text-accent':'text-muted'} font-bold">${ot>0?'+'+ot+'h':'0h'}</td><td><span class="badge ${Math.round(t/40*100)>=100?'badge-success':'badge-warning'}">${Math.round(t/40*100)}%</span></td></tr>`;
+  }).join('');
+}
+function exportAttendancePDF(){
+  try{
+    const{jsPDF}=window.jspdf;const doc=new jsPDF();
+    doc.setFontSize(16);doc.text('RHSMART AXIS — Rapport Présences',14,20);
+    doc.setFontSize(10);doc.text('Semaine du '+new Date().toLocaleDateString('fr-FR'),14,30);
+    const rows=APP.employees.map((e,i)=>{const h=[8,8,9,8,7];const t=h.reduce((a,b)=>a+b,0);const ot=Math.max(0,t-40);return[e.prenom+' '+e.nom,e.poste,t+'h',ot>0?'+'+ot+'h':'0h'];});
+    doc.autoTable({head:[['Employé','Poste','Total Heures','H. Sup.']],body:rows,startY:40});
+    doc.save('presences_rhsmart.pdf');toast('📄 PDF téléchargé !');
+  }catch(e){toast('Erreur PDF: '+e.message,'error');}
+}
+
+// ═══ LEAVES PHASE 2 — WORKFLOW ═══
+function renderLeaves(){
+  const tab=APP.leaveTab;
+  let fl=APP.leaves;
+  if(tab==='pending')fl=APP.leaves.filter(l=>l.statut==='en attente');
+  else if(tab==='manager')fl=APP.leaves.filter(l=>l.statut==='chez manager');
+  else if(tab==='approved')fl=APP.leaves.filter(l=>l.statut==='approuvé');
+  else if(tab==='rejected')fl=APP.leaves.filter(l=>l.statut==='refusé');
+
+  // Mise à jour pipeline
+  const wfCounts=[
+    APP.leaves.filter(l=>l.statut==='en attente').length,
+    APP.leaves.filter(l=>l.statut==='chez manager').length,
+    APP.leaves.filter(l=>l.statut==='approuvé').length,
+    0
+  ];
+  ['wf-step1-count','wf-step2-count','wf-step3-count','wf-step4-count'].forEach((id,i)=>{
+    const el=document.getElementById(id);if(el)el.textContent=wfCounts[i];
+  });
+
+  document.getElementById('leave-pending-count').textContent=APP.leaves.filter(l=>l.statut==='en attente').length;
+  document.getElementById('badge-leaves').textContent=APP.leaves.filter(l=>l.statut==='en attente').length;
+
+  // Soldes
+  document.getElementById('leave-balances').innerHTML=APP.employees.map(e=>{
+    const taken=APP.leaves.filter(l=>l.employee_id===e.id&&l.statut==='approuvé'&&l.type_conge==='Congé annuel').reduce((s,l)=>s+Math.ceil((new Date(l.date_fin)-new Date(l.date_debut))/86400000)+1,0);
+    const rem=Math.max(0,24-taken);
+    return `<div style="padding:12px;background:var(--surface2);border-radius:10px">
+      <div class="text-xs font-bold mb-1">${e.prenom} ${e.nom}</div>
+      <div class="flex justify-between text-xs mb-1"><span class="text-muted">Pris</span><span>${taken}j</span></div>
+      <div class="flex justify-between text-xs mb-2"><span class="text-muted">Restants</span><span class="text-accent font-bold">${rem}j</span></div>
+      <div class="progress"><div class="progress-bar" style="width:${Math.round(taken/24*100)}%;background:${taken>20?'var(--danger)':'var(--accent)'}"></div></div>
+    </div>`;
+  }).join('');
+
+  // Icônes étapes workflow
+  const wfIcons={'en attente':'⏳','chez manager':'👔','approuvé':'✅','refusé':'❌'};
+  const wfBadges={'en attente':'badge-warning','chez manager':'badge-purple','approuvé':'badge-success','refusé':'badge-danger'};
+
+  // Actions selon étape
+  function getActions(l){
+    if(l.statut==='en attente') return `<button class="btn btn-secondary btn-sm" onclick="openWorkflowModal(${l.id})">👔 Envoyer au Manager</button>`;
+    if(l.statut==='chez manager') return `<button class="btn btn-success btn-sm" onclick="openWorkflowModal(${l.id})">✓ Valider DRH</button><button class="btn btn-danger btn-sm" onclick="workflowRejectDirect(${l.id})">✗ Refuser</button>`;
+    return '<span class="text-xs text-muted">Traité</span>';
+  }
+
+  document.getElementById('leaves-table-body').innerHTML=fl.length?fl.map(l=>{
+    const emp=APP.employees.find(e=>e.id===l.employee_id);
+    const days=Math.ceil((new Date(l.date_fin)-new Date(l.date_debut))/86400000)+1;
+    const wfStep=l.statut==='en attente'?1:l.statut==='chez manager'?2:l.statut==='approuvé'?4:4;
+    const steps=['','👤','👔','🧑‍💼','✅'];
+    return `<tr>
+      <td class="td-name">${emp?emp.prenom+' '+emp.nom:'—'}</td>
+      <td>${l.type_conge}</td><td>${l.date_debut}</td><td>${l.date_fin}</td>
+      <td><strong>${days}j</strong></td>
+      <td class="text-muted">${l.motif||'—'}</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center">
+          ${[1,2,3,4].map(s=>`<div style="width:22px;height:22px;border-radius:50%;background:${s<=wfStep?'var(--accent)':'var(--surface3)'};display:flex;align-items:center;justify-content:center;font-size:10px">${s<=wfStep?'✓':s}</div>`).join('<div style="width:8px;height:2px;background:var(--border)"></div>')}
+        </div>
+      </td>
+      <td><span class="badge ${wfBadges[l.statut]||'badge-warning'}">${l.statut}</span></td>
+      <td><div class="td-actions">${getActions(l)}</div></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Aucune demande</td></tr>`;
+}
+
+function switchLeaveTab(tab){
+  APP.leaveTab=tab;
+  document.querySelectorAll('#page-leaves .tabs .tab').forEach((t,i)=>t.classList.toggle('active',['pending','manager','approved','rejected','all'][i]===tab));
+  renderLeaves();
+}
+
+// Workflow modaux
+function openWorkflowModal(leaveId){
+  APP.workflowLeaveId=leaveId;
+  const l=APP.leaves.find(x=>x.id===leaveId);
+  const emp=APP.employees.find(e=>e.id===l?.employee_id);
+  const days=l?Math.ceil((new Date(l.date_fin)-new Date(l.date_debut))/86400000)+1:0;
+  const isManager=l?.statut==='en attente';
+  document.getElementById('wf-modal-content').innerHTML=`
+    <div style="background:var(--surface2);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div class="font-bold">${emp?emp.prenom+' '+emp.nom:'—'}</div>
+      <div class="text-sm text-muted">${l?.type_conge} — ${days} jour(s)</div>
+      <div class="text-sm text-muted">${l?.date_debut} → ${l?.date_fin}</div>
+      <div class="text-sm">${l?.motif||'Aucun motif'}</div>
+    </div>
+    <div class="alert ${isManager?'alert-info':'alert-success'}">
+      ${isManager?'👔 Action : Transmettre au Manager ou approuver directement':'🧑‍💼 Action DRH : Validation finale et notification WhatsApp automatique'}
+    </div>`;
+  openModal('modal-workflow-approve');
+}
+function workflowApprove(){
+  const l=APP.leaves.find(x=>x.id===APP.workflowLeaveId);
+  if(!l)return;
+  if(l.statut==='en attente') l.statut='chez manager';
+  else l.statut='approuvé';
+  // Notification WhatsApp auto si approuvé final
+  if(l.statut==='approuvé'){
+    const emp=APP.employees.find(e=>e.id===l.employee_id);
+    if(emp){
+      const msg=`✅ *Congé Approuvé — RHSMART AXIS*\n\nBonjour ${emp.prenom},\n\nVotre demande de congé a été approuvée :\n📅 ${l.date_debut} → ${l.date_fin}\n📋 Type : ${l.type_conge}\n\n_Bonne vacances ! — RHSMART AXIS_`;
+      const phone=(emp.telephone||'').replace(/[\s+\-()]/g,'');
+      setTimeout(()=>window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank'),500);
+      toast('✅ Congé approuvé + notification WhatsApp envoyée !');
+    }
+  } else {
+    toast('👔 Demande transmise au Manager pour validation');
+  }
+  closeModal('modal-workflow-approve');
+  addNotif('🏖️','Workflow Congé',`Demande ${l.statut}`);logAudit('Workflow congé',l.statut);
+  renderLeaves();renderDashboard();
+}
+function workflowReject(){
+  const l=APP.leaves.find(x=>x.id===APP.workflowLeaveId);
+  if(!l)return;
+  l.statut='refusé';l.commentaire=document.getElementById('wf-comment').value;
+  const emp=APP.employees.find(e=>e.id===l.employee_id);
+  if(emp){
+    const msg=`❌ *Congé Refusé — RHSMART AXIS*\n\nBonjour ${emp.prenom},\n\nVotre demande de congé a été refusée.\n📋 ${l.type_conge} — ${l.date_debut} → ${l.date_fin}\n${l.commentaire?'💬 Motif : '+l.commentaire:''}\n\n_RHSMART AXIS_`;
+    const phone=(emp.telephone||'').replace(/[\s+\-()]/g,'');
+    setTimeout(()=>window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank'),500);
+  }
+  closeModal('modal-workflow-approve');toast('Congé refusé + notification envoyée','info');
+  logAudit('Refus congé workflow','ID:'+APP.workflowLeaveId);renderLeaves();renderDashboard();
+}
+function workflowRejectDirect(id){APP.workflowLeaveId=id;openWorkflowModal(id);setTimeout(()=>document.getElementById('wf-modal-content').querySelector('.alert').innerHTML='⚠️ Vous êtes sur le point de refuser cette demande.',200);}
+
+function exportLeavesPDF(){
+  try{
+    const{jsPDF}=window.jspdf;const doc=new jsPDF();
+    doc.setFontSize(14);doc.text('RHSMART AXIS — Rapport Congés',14,20);
+    doc.autoTable({head:[['Employé','Type','Début','Fin','Jours','Statut']],body:APP.leaves.map(l=>{const emp=APP.employees.find(e=>e.id===l.employee_id);const d=Math.ceil((new Date(l.date_fin)-new Date(l.date_debut))/86400000)+1;return[emp?emp.prenom+' '+emp.nom:'—',l.type_conge,l.date_debut,l.date_fin,d+'j',l.statut];}),startY:30});
+    doc.save('conges_rhsmart.pdf');toast('📄 Rapport congés exporté !');
+  }catch(e){toast('Erreur: '+e.message,'error');}
+}
+
+async function addLeave(){
+  const employee_id=parseInt(document.getElementById('leave-employee-id').value);
+  const date_debut=document.getElementById('leave-start').value;
+  const date_fin=document.getElementById('leave-end').value;
+  if(!date_debut||!date_fin){toast('Dates obligatoires','error');return;}
+  const leave={id:Date.now(),employee_id,type_conge:document.getElementById('leave-type').value,date_debut,date_fin,motif:document.getElementById('leave-motif').value,statut:'en attente',created_at:new Date().toISOString()};
+  try{if(sb)await sb.from('conges').insert([leave]);}catch(e){}
+  APP.leaves.push(leave);closeModal('modal-add-leave');
+  toast('✅ Demande soumise — En attente d\'approbation Manager');addNotif('🏖️','Congé soumis','Workflow démarré');logAudit('Demande congé',leave.type_conge);
+  renderLeaves();document.getElementById('badge-leaves').textContent=APP.leaves.filter(l=>l.statut==='en attente').length;
+}
+
+async function approveLeave(id){
+  const l=APP.leaves.find(x=>x.id===id);if(l)l.statut='approuvé';
+  try{if(sb)await sb.from('conges').update({statut:'approuvé'}).eq('id',id);}catch(e){}
+  toast('✅ Congé approuvé !');addNotif('✅','Congé approuvé','Demande traitée');logAudit('Approbation congé','ID:'+id);renderLeaves();renderDashboard();
+}
+async function rejectLeave(id){
+  const l=APP.leaves.find(x=>x.id===id);if(l)l.statut='refusé';
+  try{if(sb)await sb.from('conges').update({statut:'refusé'}).eq('id',id);}catch(e){}
+  toast('Congé refusé','info');logAudit('Refus congé','ID:'+id);renderLeaves();renderDashboard();
+}
+
+// ═══ PAYROLL TABS ═══
+function switchPayrollTab(tab){
+  APP.payrollTab=tab;
+  ['bulletins','primes','avances','declarations','simulation'].forEach(t=>{
+    const el=document.getElementById('tab-'+t);if(el)el.classList.toggle('hidden',t!==tab);
+  });
+  document.querySelectorAll('#page-payroll .tabs .tab').forEach((t,i)=>t.classList.toggle('active',['bulletins','primes','avances','declarations','simulation'][i]===tab));
+  if(tab==='primes')renderPrimes();
+  if(tab==='avances')renderAvances();
+  if(tab==='declarations')renderCNSSDeclaration();
+}
+
+// ═══ MOTEUR PAIE OHADA BÉNIN — COMPLET ═══
+function calcITSProgressif(base){
+  // Tranches ITS progressives Bénin (annualisées → mensuel)
+  const baseAnnuel=base*12;
+  let its=0;
+  // Tranche 1: 0 - 600 000 FCFA/an = 0%
+  // Tranche 2: 600 001 - 1 200 000 = 10%
+  // Tranche 3: 1 200 001 - 2 400 000 = 15%
+  // Tranche 4: 2 400 001 - 4 800 000 = 20%
+  // Tranche 5: > 4 800 000 = 35%
+  const tranches=[
+    {min:0,max:600000,taux:0},
+    {min:600000,max:1200000,taux:0.10},
+    {min:1200000,max:2400000,taux:0.15},
+    {min:2400000,max:4800000,taux:0.20},
+    {min:4800000,max:Infinity,taux:0.35}
+  ];
+  for(const t of tranches){
+    if(baseAnnuel>t.min){
+      const imposable=Math.min(baseAnnuel,t.max)-t.min;
+      its+=imposable*t.taux;
+    }
+  }
+  return Math.round(its/12);
+}
+
+function calcAnciennete(emp){
+  if(!emp.date_embauche)return 0;
+  const annees=Math.floor((Date.now()-new Date(emp.date_embauche))/(365.25*86400000));
+  if(annees<2)return 0;
+  if(annees<5)return Math.round(emp.salaire*0.02);
+  if(annees<10)return Math.round(emp.salaire*0.04);
+  if(annees<15)return Math.round(emp.salaire*0.06);
+  return Math.round(emp.salaire*0.08);
+}
+
+function calcPayroll(emp){
+  const brut=emp.salaire||0;
+  const thr=emp.taux_horaire||Math.round(brut/(22*8));
+  const oth=Math.floor(Math.random()*6);
+  const abd=Math.floor(Math.random()*1);
+  const otp=Math.round(oth*thr*(1+APP.payrollParams.ot/100));
+  const abd_ded=Math.round(abd*(brut/22));
+
+  // Transport (non soumis CNSS)
+  const transport=APP.payrollParams.transport||25000;
+  // Ancienneté
+  const anc=calcAnciennete(emp);
+  // Primes du mois
+  const moisPrimes=APP.primes.filter(p=>p.employee_id===emp.id).reduce((s,p)=>s+p.montant,0);
+  // Avances à déduire
+  const avancesDues=APP.avances.filter(a=>a.employee_id===emp.id&&a.statut==='actif').reduce((s,a)=>s+Math.round(a.montant/a.mensualites),0);
+
+  // Base CNSS = brut + ot + anc (sans transport)
+  const baseCNSS=brut+otp+anc;
+  const cnss=Math.round(baseCNSS*APP.payrollParams.cnss/100);
+  const cnssEmployeur=Math.round(baseCNSS*APP.payrollParams.cnssEmployeur/100);
+
+  // Base ITS = brut + ot + anc + transport - CNSS
+  const baseITS=baseCNSS+transport-cnss;
+  const its=calcITSProgressif(baseITS);
+
+  // IPR = 0 (intégré dans ITS au Bénin)
+  const net=Math.round(brut+otp+anc+transport+moisPrimes-abd_ded-cnss-its-avancesDues);
+  return{brut,oth,otp,abd,abd_ded,transport,anc,moisPrimes,avancesDues,cnss,cnssEmployeur,its,net,baseCNSS,baseITS};
+}
+
+function renderPayroll(){
+  const data=APP.employees.map(e=>({emp:e,c:calcPayroll(e)}));
+  const tBrut=data.reduce((s,d)=>s+d.c.brut,0);
+  const tNet=data.reduce((s,d)=>s+d.c.net,0);
+  const tCNSS=data.reduce((s,d)=>s+d.c.cnss,0);
+  const tCNSSEmp=data.reduce((s,d)=>s+d.c.cnssEmployeur,0);
+  document.getElementById('payroll-summary').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Masse Brute</div><div class="stat-value text-accent" style="font-size:18px">${tBrut.toLocaleString('fr-FR')}</div><div class="stat-sub">FCFA</div></div>
+    <div class="stat-card"><div class="stat-label">CNSS Employés</div><div class="stat-value text-warning" style="font-size:18px">${tCNSS.toLocaleString('fr-FR')}</div><div class="stat-sub">+ ${tCNSSEmp.toLocaleString('fr-FR')} employeur</div></div>
+    <div class="stat-card"><div class="stat-label">ITS Progressif</div><div class="stat-value text-danger" style="font-size:18px">${data.reduce((s,d)=>s+d.c.its,0).toLocaleString('fr-FR')}</div><div class="stat-sub">FCFA</div></div>
+    <div class="stat-card"><div class="stat-label">Net Total à Payer</div><div class="stat-value text-success" style="font-size:18px">${tNet.toLocaleString('fr-FR')}</div><div class="stat-sub">FCFA</div></div>`;
+  document.getElementById('payroll-table-body').innerHTML=data.map(({emp,c})=>`
+    <tr>
+      <td class="td-name">${emp.prenom} ${emp.nom}<br><span class="text-xs text-muted">${emp.poste}</span></td>
+      <td>${c.brut.toLocaleString('fr-FR')}</td>
+      <td class="text-accent2">+${c.transport.toLocaleString('fr-FR')}</td>
+      <td class="text-success">${c.anc>0?'+'+c.anc.toLocaleString('fr-FR'):'—'}</td>
+      <td class="text-warning">-${c.cnss.toLocaleString('fr-FR')}</td>
+      <td><span class="badge badge-info" style="cursor:pointer" title="ITS calculé par tranches progressives">-${c.its.toLocaleString('fr-FR')}</span></td>
+      <td class="text-success">${c.oth>0?'+'+c.otp.toLocaleString('fr-FR'):'—'}</td>
+      <td class="text-danger">${c.avancesDues>0?'-'+c.avancesDues.toLocaleString('fr-FR'):'—'}</td>
+      <td><strong class="text-accent" style="font-size:14px">${c.net.toLocaleString('fr-FR')} FCFA</strong></td>
+      <td><div class="td-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openPayslipModal(${emp.id})">👁️</button>
+        <button class="btn btn-pdf btn-sm" onclick="downloadSinglePDF(${emp.id})">📄</button>
+        <button class="btn btn-whatsapp btn-sm" onclick="sendWA(${emp.id})">💬</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+// ═══ PRIMES ═══
+function populatePrimeSelects(){
+  ['prime-employee-id','avance-employee-id'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.innerHTML=APP.employees.map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');
+  });
+}
+function addPrime(){
+  const employee_id=parseInt(document.getElementById('prime-employee-id').value);
+  const montant=parseInt(document.getElementById('prime-montant').value)||0;
+  if(!montant){toast('Montant obligatoire','error');return;}
+  APP.primes.push({id:Date.now(),employee_id,type:document.getElementById('prime-type').value,montant,month:document.getElementById('prime-month').value,year:document.getElementById('prime-year').value,justif:document.getElementById('prime-justif').value});
+  closeModal('modal-add-prime');toast('✅ Prime ajoutée !');logAudit('Prime ajoutée',montant+' FCFA');renderPrimes();
+}
+function renderPrimes(){
+  populatePrimeSelects();
+  document.getElementById('primes-table-body').innerHTML=APP.primes.length?APP.primes.map(p=>{
+    const emp=APP.employees.find(e=>e.id===p.employee_id);
+    return `<tr><td class="td-name">${emp?emp.prenom+' '+emp.nom:'—'}</td><td><span class="badge badge-accent">${p.type}</span></td><td class="font-bold text-success">+${p.montant.toLocaleString('fr-FR')} FCFA</td><td>${p.month}/${p.year}</td><td class="text-muted">${p.justif||'—'}</td><td><button class="btn btn-danger btn-sm" onclick="APP.primes=APP.primes.filter(x=>x.id!==${p.id});renderPrimes()">🗑️</button></td></tr>`;
+  }).join(''):`<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Aucune prime enregistrée</td></tr>`;
+}
+
+// ═══ AVANCES ═══
+function addAvance(){
+  const employee_id=parseInt(document.getElementById('avance-employee-id').value);
+  const montant=parseInt(document.getElementById('avance-montant').value)||0;
+  if(!montant){toast('Montant obligatoire','error');return;}
+  const mensualites=parseInt(document.getElementById('avance-mensualites').value)||1;
+  APP.avances.push({id:Date.now(),employee_id,montant,mensualites,motif:document.getElementById('avance-motif').value,date:new Date().toISOString().slice(0,10),statut:'actif',paye:0});
+  closeModal('modal-add-avance');toast('✅ Avance accordée et déduction planifiée !');logAudit('Avance accordée',montant+' FCFA');renderAvances();
+}
+function renderAvances(){
+  populatePrimeSelects();
+  document.getElementById('avances-table-body').innerHTML=APP.avances.length?APP.avances.map(a=>{
+    const emp=APP.employees.find(e=>e.id===a.employee_id);
+    const mensualite=Math.round(a.montant/a.mensualites);
+    const restant=a.montant-a.paye;
+    return `<tr>
+      <td class="td-name">${emp?emp.prenom+' '+emp.nom:'—'}</td>
+      <td class="font-bold">${a.montant.toLocaleString('fr-FR')} FCFA</td>
+      <td class="text-muted">${a.date}</td>
+      <td>${a.mensualites} × ${mensualite.toLocaleString('fr-FR')} FCFA/mois</td>
+      <td class="${restant>0?'text-danger font-bold':'text-success'}">${restant.toLocaleString('fr-FR')} FCFA</td>
+      <td><span class="badge ${a.statut==='actif'?'badge-warning':'badge-success'}">${a.statut==='actif'?'En cours':'Soldé'}</span></td>
+      <td><div class="td-actions">
+        <button class="btn btn-success btn-sm" onclick="marquerAvanceSoldee(${a.id})">✓ Soldé</button>
+        <button class="btn btn-danger btn-sm" onclick="APP.avances=APP.avances.filter(x=>x.id!==${a.id});renderAvances()">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">Aucune avance enregistrée</td></tr>`;
+}
+function marquerAvanceSoldee(id){const a=APP.avances.find(x=>x.id===id);if(a){a.statut='soldé';a.paye=a.montant;}toast('✅ Avance marquée comme soldée !');renderAvances();}
+
+// ═══ DÉCLARATION CNSS ═══
+function renderCNSSDeclaration(){
+  const data=APP.employees.map(e=>({emp:e,c:calcPayroll(e)}));
+  const tBase=data.reduce((s,d)=>s+d.c.baseCNSS,0);
+  const tEmp=data.reduce((s,d)=>s+d.c.cnss,0);
+  const tEmpeur=data.reduce((s,d)=>s+d.c.cnssEmployeur,0);
+  const m=document.getElementById('payroll-month')?.value||5;
+  const y=document.getElementById('payroll-year')?.value||2026;
+  const mn=['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  document.getElementById('cnss-declaration-content').innerHTML=`
+    <div style="background:#fff;color:#000;border-radius:12px;padding:24px;font-family:monospace">
+      <div style="text-align:center;font-weight:700;font-size:16px;border-bottom:2px solid #000;padding-bottom:12px;margin-bottom:16px">
+        CAISSE NATIONALE DE SÉCURITÉ SOCIALE — BÉNIN<br>
+        <span style="font-size:14px">DÉCLARATION MENSUELLE DES COTISATIONS</span><br>
+        <span style="font-size:12px">${mn[m]} ${y}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>Employeur: <strong>AXIS ADMIN ET RH</strong></div>
+        <div>N° CNSS: <strong>BJ-2021-001234</strong></div>
+        <div>Mois déclaré: <strong>${mn[m]} ${y}</strong></div>
+        <div>Nombre de salariés: <strong>${APP.employees.length}</strong></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:#f0f0f0">${['Matricule','Nom & Prénom','Salaire Brut','Base CNSS','Part Salariale 3.6%','Part Patronale 16.4%'].map(h=>`<th style="border:1px solid #ccc;padding:6px">${h}</th>`).join('')}</tr></thead>
+        <tbody>${data.map(({emp,c})=>`<tr>
+          <td style="border:1px solid #ccc;padding:6px">EMP-${String(emp.id).padStart(4,'0')}</td>
+          <td style="border:1px solid #ccc;padding:6px">${emp.prenom} ${emp.nom}</td>
+          <td style="border:1px solid #ccc;padding:6px;text-align:right">${c.brut.toLocaleString('fr-FR')}</td>
+          <td style="border:1px solid #ccc;padding:6px;text-align:right">${c.baseCNSS.toLocaleString('fr-FR')}</td>
+          <td style="border:1px solid #ccc;padding:6px;text-align:right">${c.cnss.toLocaleString('fr-FR')}</td>
+          <td style="border:1px solid #ccc;padding:6px;text-align:right">${c.cnssEmployeur.toLocaleString('fr-FR')}</td>
+        </tr>`).join('')}
+        <tr style="background:#f0f0f0;font-weight:700">
+          <td colspan="3" style="border:1px solid #000;padding:8px;text-align:right">TOTAUX</td>
+          <td style="border:1px solid #000;padding:8px;text-align:right">${tBase.toLocaleString('fr-FR')}</td>
+          <td style="border:1px solid #000;padding:8px;text-align:right">${tEmp.toLocaleString('fr-FR')}</td>
+          <td style="border:1px solid #000;padding:8px;text-align:right">${tEmpeur.toLocaleString('fr-FR')}</td>
+        </tr></tbody>
+      </table>
+      <div style="margin-top:16px;font-weight:700;font-size:14px">
+        TOTAL À VERSER À LA CNSS : ${(tEmp+tEmpeur).toLocaleString('fr-FR')} FCFA
+      </div>
+    </div>`;
+}
+function exportCNSSPDF(){
+  try{
+    const{jsPDF}=window.jspdf;const doc=new jsPDF();
+    doc.setFontSize(14);doc.text('CNSS BÉNIN — Déclaration Mensuelle',105,20,{align:'center'});
+    const data=APP.employees.map(e=>({emp:e,c:calcPayroll(e)}));
+    doc.autoTable({head:[['Matricule','Nom','Salaire Brut','Base CNSS','Part Salarié','Part Patronale']],body:data.map(({emp,c})=>['EMP-'+String(emp.id).padStart(4,'0'),emp.prenom+' '+emp.nom,c.brut.toLocaleString(),c.baseCNSS.toLocaleString(),c.cnss.toLocaleString(),c.cnssEmployeur.toLocaleString()]),startY:30});
+    doc.save('declaration_cnss_rhsmart.pdf');toast('📄 Déclaration CNSS exportée !');
+  }catch(e){toast('Erreur: '+e.message,'error');}
+}
+
+// ═══ SIMULATEUR ═══
+function runSimulation(){
+  const brut=parseInt(document.getElementById('sim-brut')?.value)||0;
+  const annees=parseInt(document.getElementById('sim-anciennete')?.value)||0;
+  const oth=parseInt(document.getElementById('sim-ot-hours')?.value)||0;
+  const transport=parseInt(document.getElementById('sim-transport')?.value)||25000;
+  if(!brut)return;
+  const thr=Math.round(brut/(22*8));
+  const otp=Math.round(oth*thr*1.25);
+  let anc=0;
+  if(annees>=2&&annees<5)anc=Math.round(brut*0.02);
+  else if(annees>=5&&annees<10)anc=Math.round(brut*0.04);
+  else if(annees>=10&&annees<15)anc=Math.round(brut*0.06);
+  else if(annees>=15)anc=Math.round(brut*0.08);
+  const baseCNSS=brut+otp+anc;
+  const cnss=Math.round(baseCNSS*3.6/100);
+  const cnssE=Math.round(baseCNSS*16.4/100);
+  const baseITS=baseCNSS+transport-cnss;
+  const its=calcITSProgressif(baseITS);
+  const net=Math.round(brut+otp+anc+transport-cnss-its);
+  const taux=Math.round((1-net/brut)*100);
+  document.getElementById('sim-result').innerHTML=`
+    <div style="font-weight:700;font-size:15px;margin-bottom:16px;color:var(--accent)">Simulation — ${brut.toLocaleString('fr-FR')} FCFA brut</div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+      <div class="flex justify-between"><span>Salaire de base</span><span class="font-bold">${brut.toLocaleString('fr-FR')} FCFA</span></div>
+      ${otp>0?`<div class="flex justify-between text-success"><span>H. Sup. (${oth}h × +25%)</span><span>+${otp.toLocaleString('fr-FR')}</span></div>`:''}
+      ${anc>0?`<div class="flex justify-between text-success"><span>Prime ancienneté (${annees} ans)</span><span>+${anc.toLocaleString('fr-FR')}</span></div>`:''}
+      <div class="flex justify-between text-accent2"><span>Indemnité transport</span><span>+${transport.toLocaleString('fr-FR')}</span></div>
+      <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px"></div>
+      <div class="flex justify-between text-warning"><span>CNSS salarié (3.6%)</span><span>-${cnss.toLocaleString('fr-FR')}</span></div>
+      <div class="flex justify-between text-danger"><span>ITS progressif</span><span>-${its.toLocaleString('fr-FR')}</span></div>
+      <div style="border-top:2px solid var(--accent);padding-top:10px;margin-top:6px">
+        <div class="flex justify-between" style="font-size:16px;font-weight:800;color:var(--accent)"><span>NET À PAYER</span><span>${net.toLocaleString('fr-FR')} FCFA</span></div>
+        <div class="flex justify-between text-muted mt-2"><span>Taux de prélèvement</span><span>${taux}%</span></div>
+        <div class="flex justify-between text-muted"><span>Coût employeur total</span><span>${(brut+otp+anc+cnssE).toLocaleString('fr-FR')} FCFA</span></div>
+      </div>
+      <div class="progress mt-3"><div class="progress-bar" style="width:${100-taux}%;background:var(--accent)"></div></div>
+      <div class="text-xs text-center text-muted">${100-taux}% du brut conservé</div>
+    </div>`;
+}
+
+function generateAllPayslips(){
+  const m=document.getElementById('payroll-month').value;
+  const y=document.getElementById('payroll-year').value;
+  const mn=['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  toast(`⚡ ${APP.employees.length} bulletins générés pour ${mn[m]} ${y} !`);
+  addNotif('💳','Bulletins générés',`${APP.employees.length} bulletins prêts`);logAudit('Génération bulletins',m+'/'+y);
+}
+function savePayrollParams(){
+  APP.payrollParams.cnss=parseFloat(document.getElementById('pm-cnss').value)||3.6;
+  APP.payrollParams.its=parseFloat(document.getElementById('pm-its').value)||10;
+  APP.payrollParams.ot=parseFloat(document.getElementById('pm-ot').value)||25;
+  closeModal('modal-payroll-params');toast('✅ Paramètres paie sauvegardés !');renderPayroll();
+}
+function sendAllWA(){
+  APP.employees.forEach(e=>sendWA(e.id));
+  toast(`💬 ${APP.employees.length} bulletins envoyés sur WhatsApp !`);
+}
+
+// ── PAYSLIP MODAL ──
+function openPayslipModal(empId){
+  const emp=APP.employees.find(e=>e.id===empId);if(!emp)return;
+  const c=calcPayroll(emp);APP.currentPayslip={emp,c};
+  const m=document.getElementById('payroll-month')?.value||5;
+  const y=document.getElementById('payroll-year')?.value||2026;
+  const mn=['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  document.getElementById('payslip-preview-content').innerHTML=`
+    <div class="payslip-preview">
+      <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+        <div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#0a0f1e">RHSMART AXIS</div><div style="font-size:11px;color:#666">Système Intégré RH</div></div>
+        <div style="text-align:right"><div style="font-weight:700;font-size:14px">BULLETIN DE PAIE</div><div style="font-size:12px;color:#666">${mn[m]} ${y}</div></div>
+      </div>
+      <hr style="border:none;border-top:2px solid #0a0f1e;margin:12px 0"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div style="background:#f8fafc;padding:12px;border-radius:8px">
+          <div style="font-size:10px;color:#666;margin-bottom:4px">EMPLOYÉ</div>
+          <div style="font-weight:700">${emp.prenom} ${emp.nom}</div>
+          <div style="font-size:12px">${emp.poste} — ${emp.departement}</div>
+          <div style="font-size:11px;color:#666">${emp.email}</div>
+        </div>
+        <div style="background:#f8fafc;padding:12px;border-radius:8px">
+          <div style="font-size:10px;color:#666;margin-bottom:4px">INFORMATIONS</div>
+          <div style="font-size:12px">Contrat : <strong>${emp.contrat||'CDI'}</strong></div>
+          <div style="font-size:12px">Embauche : <strong>${emp.date_embauche||'—'}</strong></div>
+          <div style="font-size:12px">Matricule : <strong>EMP-${String(emp.id).padStart(4,'0')}</strong></div>
+        </div>
+      </div>
+      <div style="font-weight:700;margin-bottom:6px;font-size:13px">RÉMUNÉRATION</div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px"><span>Salaire de base</span><span>${c.brut.toLocaleString('fr-FR')} FCFA</span></div>
+      ${c.otp>0?`<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#16a34a"><span>Heures supplémentaires (${c.oth}h × +${APP.payrollParams.ot}%)</span><span>+ ${c.otp.toLocaleString('fr-FR')} FCFA</span></div>`:''}
+      ${c.primes>0?`<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#16a34a"><span>Prime du mois</span><span>+ ${c.primes.toLocaleString('fr-FR')} FCFA</span></div>`:''}
+      <div style="font-weight:700;margin:12px 0 6px;font-size:13px">DÉDUCTIONS</div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#dc2626"><span>CNSS (${APP.payrollParams.cnss}%)</span><span>- ${c.cnss.toLocaleString('fr-FR')} FCFA</span></div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#dc2626"><span>ITS/IPR (${APP.payrollParams.its}%)</span><span>- ${c.its.toLocaleString('fr-FR')} FCFA</span></div>
+      ${c.abd>0?`<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#dc2626"><span>Retenue absences (${c.abd}j)</span><span>- ${c.abd_ded.toLocaleString('fr-FR')} FCFA</span></div>`:''}
+      <hr style="border:none;border-top:1px solid #ddd;margin:12px 0"/>
+      <div style="display:flex;justify-content:space-between;background:#0a0f1e;color:#00e5b4;padding:12px;border-radius:8px;font-weight:700">
+        <span>NET À PAYER</span><span style="font-size:20px">${c.net.toLocaleString('fr-FR')} FCFA</span>
+      </div>
+      <div style="font-size:10px;color:#aaa;margin-top:12px;text-align:center">Généré par RHSMART AXIS — ${new Date().toLocaleDateString('fr-FR')}</div>
+    </div>`;
+  openModal('modal-payslip');
+}
+function sharePayslipWA(){if(APP.currentPayslip)sendWA(APP.currentPayslip.emp.id);}
+function sendWA(empId){
+  const emp=APP.employees.find(e=>e.id===empId);if(!emp)return;
+  const c=APP.currentPayslip?.emp?.id===empId?APP.currentPayslip.c:calcPayroll(emp);
+  const mn=new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  const msg=`🏢 *RHSMART AXIS — Bulletin de Paie*\n\n👤 *${emp.prenom} ${emp.nom}*\n📋 ${emp.poste} — ${emp.departement}\n\n💰 Salaire brut : ${c.brut.toLocaleString('fr-FR')} FCFA\n${c.otp>0?`➕ H. Sup. : +${c.otp.toLocaleString('fr-FR')} FCFA\n`:''}${c.primes>0?`➕ Primes : +${c.primes.toLocaleString('fr-FR')} FCFA\n`:''}➖ CNSS : -${c.cnss.toLocaleString('fr-FR')} FCFA\n➖ ITS/IPR : -${c.its.toLocaleString('fr-FR')} FCFA\n\n✅ *NET À PAYER : ${c.net.toLocaleString('fr-FR')} FCFA*\n\n📅 Période : ${mn}\n_RHSMART AXIS — rhsmart-axis.vercel.app_`;
+  const phone=(emp.telephone||'').replace(/[\s+\-()]/g,'');
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  toast('💬 WhatsApp ouvert !');logAudit('Envoi WhatsApp',emp.prenom+' '+emp.nom);
+}
+function downloadPayslipPDF(){if(APP.currentPayslip)downloadSinglePDF(APP.currentPayslip.emp.id);}
+function downloadSinglePDF(empId){
+  const emp=APP.employees.find(e=>e.id===empId);if(!emp)return;
+  const c=APP.currentPayslip?.emp?.id===empId?APP.currentPayslip.c:calcPayroll(emp);
+  try{
+    const{jsPDF}=window.jspdf;const doc=new jsPDF();
+    doc.setFillColor(10,15,30);doc.rect(0,0,210,45,'F');
+    doc.setTextColor(0,229,180);doc.setFontSize(20);doc.setFont('helvetica','bold');doc.text('RHSMART AXIS',14,18);
+    doc.setTextColor(255,255,255);doc.setFontSize(11);doc.setFont('helvetica','normal');doc.text('BULLETIN DE PAIE',14,28);doc.text(`${emp.prenom} ${emp.nom} — ${new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}`,14,37);
+    doc.setTextColor(0,0,0);doc.setFontSize(10);
+    doc.text(`Employé : ${emp.prenom} ${emp.nom}`,14,56);doc.text(`Poste : ${emp.poste} | Département : ${emp.departement}`,14,64);doc.text(`Email : ${emp.email} | Tél : ${emp.telephone||'—'}`,14,72);doc.text(`Contrat : ${emp.contrat||'CDI'} | Embauche : ${emp.date_embauche||'—'}`,14,80);
+    const rows=[['Salaire de base',c.brut.toLocaleString('fr-FR')+' FCFA'],...(c.otp>0?[['H. Supplémentaires ('+c.oth+'h)','+'+c.otp.toLocaleString('fr-FR')+' FCFA']]:[]),(c.primes>0?[['Prime du mois','+'+c.primes.toLocaleString('fr-FR')+' FCFA']]:null),['CNSS ('+APP.payrollParams.cnss+'%)','-'+c.cnss.toLocaleString('fr-FR')+' FCFA'],['ITS/IPR ('+APP.payrollParams.its+'%)','-'+c.its.toLocaleString('fr-FR')+' FCFA'],...(c.abd>0?[['Retenue absences ('+c.abd+'j)','-'+c.abd_ded.toLocaleString('fr-FR')+' FCFA']]:[])||[]].filter(Boolean);
+    doc.autoTable({head:[['Description','Montant']],body:rows,startY:90,headStyles:{fillColor:[0,180,140]}});
+    const fy=doc.lastAutoTable.finalY+12;
+    doc.setFillColor(10,15,30);doc.rect(0,fy-4,210,18,'F');
+    doc.setTextColor(0,229,180);doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text('NET À PAYER : '+c.net.toLocaleString('fr-FR')+' FCFA',14,fy+9);
+    doc.setTextColor(150,150,150);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.text('Généré par RHSMART AXIS — rhsmart-axis.vercel.app',105,285,{align:'center'});
+    doc.save(`bulletin_${emp.nom}_${emp.prenom}.pdf`);toast('📄 PDF téléchargé !');logAudit('Export PDF',emp.prenom+' '+emp.nom);
+  }catch(e){toast('Erreur PDF: '+e.message,'error');}
+}
+function exportPayrollPDF(){
+  try{
+    const{jsPDF}=window.jspdf;const doc=new jsPDF('l','mm','a4');
+    doc.setFontSize(16);doc.text('RHSMART AXIS — Rapport Paie Global',14,20);
+    doc.setFontSize(10);doc.text('Généré le '+new Date().toLocaleDateString('fr-FR'),14,28);
+    const rows=APP.employees.map(e=>{const c=calcPayroll(e);return[e.prenom+' '+e.nom,e.poste,c.brut.toLocaleString(),c.cnss.toLocaleString(),c.its.toLocaleString(),c.otp>0?'+'+c.otp.toLocaleString():'—',c.net.toLocaleString()+' FCFA'];});
+    doc.autoTable({head:[['Employé','Poste','Brut','CNSS','ITS','H.Sup','Net']],body:rows,startY:35});
+    doc.save('rapport_paie_rhsmart.pdf');toast('📄 Rapport PDF téléchargé !');
+  }catch(e){toast('Erreur: '+e.message,'error');}
+}
+
+// ═══ EVALUATIONS ═══
+function renderEvaluations(){
+  const evs=APP.evaluations;
+  const avg=evs.length?(evs.reduce((s,e)=>s+e.score,0)/evs.length).toFixed(1):0;
+  document.getElementById('eval-avg').textContent=avg;
+  document.getElementById('eval-excellent').textContent=evs.filter(e=>e.score>=4).length;
+  document.getElementById('eval-low').textContent=evs.filter(e=>e.score<3).length;
+  document.getElementById('eval-total').textContent=evs.length;
+  const stars=n=>'⭐'.repeat(n)+'☆'.repeat(5-n);
+  document.getElementById('evaluations-table-body').innerHTML=evs.map(ev=>{
+    const emp=APP.employees.find(e=>e.id===ev.employee_id);
+    const bc=ev.score>=4?'badge-success':ev.score>=3?'badge-info':'badge-warning';
+    return `<tr><td class="td-name">${emp?emp.prenom+' '+emp.nom:'—'}</td><td>${ev.period}</td>
+      <td><span class="badge ${bc}">${stars(ev.score)}</span></td>
+      <td><div class="progress" style="width:80px;display:inline-block"><div class="progress-bar" style="width:${ev.objectifs_pct}%"></div></div><span class="text-xs"> ${ev.objectifs_pct}%</span></td>
+      <td class="text-xs text-accent">${ev.strengths||'—'}</td>
+      <td class="text-muted text-sm">${ev.comment||'—'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteEval(${ev.id})">🗑️</button></td></tr>`;
+  }).join('');
+}
+async function addEvaluation(){
+  const employee_id=parseInt(document.getElementById('eval-employee-id').value);
+  const period=document.getElementById('eval-period').value;
+  if(!period){toast('Période obligatoire','error');return;}
+  const ev={id:Date.now(),employee_id,period,score:parseInt(document.getElementById('eval-score').value),objectifs_pct:parseInt(document.getElementById('eval-objectifs').value)||0,strengths:document.getElementById('eval-strengths').value,comment:document.getElementById('eval-comment').value};
+  try{if(sb)await sb.from('evaluations').insert([ev]);}catch(e){}
+  APP.evaluations.push(ev);closeModal('modal-add-eval');toast('✅ Évaluation enregistrée !');logAudit('Évaluation créée',period);renderEvaluations();
+}
+function deleteEval(id){APP.evaluations=APP.evaluations.filter(e=>e.id!==id);renderEvaluations();}
+
+// ═══ DOCUMENTS ═══
+function renderDocuments(){
+  filterDocuments();
+  const types={contrat:0,diplome:0,attestation:0};
+  APP.documents.forEach(d=>{if(types[d.type]!==undefined)types[d.type]++;});
+  document.getElementById('doc-contrats').textContent=types.contrat;
+  document.getElementById('doc-diplomes').textContent=types.diplome;
+  document.getElementById('doc-attestations').textContent=types.attestation;
+  document.getElementById('doc-expiring').textContent=APP.documents.filter(d=>d.expiration&&new Date(d.expiration)<new Date(Date.now()+30*86400000)).length;
+}
+function filterDocuments(){
+  const q=(document.getElementById('doc-search')?.value||'').toLowerCase();
+  const ef=document.getElementById('doc-emp-filter')?.value||'';
+  const tf=document.getElementById('doc-type-filter')?.value||'';
+  const fl=APP.documents.filter(d=>(!q||d.nom.toLowerCase().includes(q))&&(!ef||d.employee_id==ef)&&(!tf||d.type===tf));
+  const tIcons={contrat:'📄',diplome:'🎓',attestation:'📋',bulletin:'💳',autre:'📎'};
+  document.getElementById('documents-table-body').innerHTML=fl.length?fl.map(d=>{
+    const emp=APP.employees.find(e=>e.id===d.employee_id);
+    const exp=d.expiration&&new Date(d.expiration)<new Date(Date.now()+30*86400000);
+    return `<tr>
+      <td><div class="flex items-center gap-2"><span style="font-size:18px">${tIcons[d.type]||'📎'}</span><span class="td-name">${d.nom}</span></div></td>
+      <td>${emp?emp.prenom+' '+emp.nom:'—'}</td>
+      <td><span class="badge badge-info">${d.type}</span></td>
+      <td class="text-muted">${d.date_upload||'—'}</td>
+      <td>${d.expiration?`<span class="${exp?'text-danger font-bold':''}">${d.expiration}${exp?' ⚠️':''}</span>`:'<span class="text-muted">—</span>'}</td>
+      <td><div class="td-actions"><button class="btn btn-secondary btn-sm">👁️</button><button class="btn btn-secondary btn-sm">⬇️</button><button class="btn btn-danger btn-sm" onclick="deleteDoc(${d.id})">🗑️</button></div></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Aucun document</td></tr>`;
+}
+function uploadDocument(){
+  const nom=document.getElementById('doc-name').value;
+  if(!nom){toast('Nom obligatoire','error');return;}
+  APP.documents.push({id:Date.now(),employee_id:parseInt(document.getElementById('doc-employee-id').value),nom,type:document.getElementById('doc-type').value,date_upload:new Date().toISOString().slice(0,10),expiration:document.getElementById('doc-expiry').value||null});
+  closeModal('modal-upload-doc');toast('📁 Document uploadé !');logAudit('Upload document',nom);renderDocuments();
+}
+function deleteDoc(id){APP.documents=APP.documents.filter(d=>d.id!==id);renderDocuments();}
+
+// ═══ ANNOUNCEMENTS ═══
+function renderAnnouncements(){
+  const cfg={info:{icon:'📢',c:'accent2'},important:{icon:'⚠️',c:'warning'},urgence:{icon:'🔴',c:'danger'},conge:{icon:'🏖️',c:'accent'}};
+  document.getElementById('announcements-list').innerHTML=APP.announcements.length?APP.announcements.map(a=>{
+    const k=cfg[a.type]||cfg.info;
+    return `<div class="card" style="border-left:3px solid var(--${k.c})">
+      <div class="flex items-center gap-3 mb-2">
+        <span style="font-size:20px">${k.icon}</span>
+        <div style="flex:1"><div class="font-bold">${a.title}</div><div class="text-xs text-muted">${a.date} — ${a.author} — Destinataires: ${a.target==='all'?'Tous':a.target}</div></div>
+        <button class="btn btn-whatsapp btn-sm" onclick="shareAnnWA(${a.id})">💬 WA</button>
+        <button class="btn btn-danger btn-sm" onclick="delAnn(${a.id})">🗑️</button>
+      </div>
+      <div style="color:var(--text2)">${a.body}</div>
+    </div>`;
+  }).join(''):'<div class="empty-state"><div style="font-size:48px;opacity:.5">📣</div><div>Aucune annonce publiée</div></div>';
+}
+function addAnnouncement(){
+  const title=document.getElementById('ann-title').value;const body=document.getElementById('ann-body').value;
+  if(!title||!body){toast('Titre et message obligatoires','error');return;}
+  APP.announcements.unshift({id:Date.now(),title,type:document.getElementById('ann-type').value,body,target:document.getElementById('ann-target').value,date:new Date().toLocaleDateString('fr-FR'),author:'Super Admin'});
+  closeModal('modal-add-announcement');toast('📣 Annonce publiée !');logAudit('Annonce publiée',title);renderAnnouncements();
+}
+function delAnn(id){APP.announcements=APP.announcements.filter(a=>a.id!==id);renderAnnouncements();}
+function shareAnnWA(id){
+  const a=APP.announcements.find(x=>x.id===id);if(!a)return;
+  const msg=`📢 *${a.title}*\n\n${a.body}\n\n_Publié par RHSMART AXIS — ${a.date}_`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');toast('💬 Annonce partagée sur WhatsApp !');
+}
+
+// ═══ SELF SERVICE ═══
+function renderSelfService(){
+  const emp=APP.employees[0];if(!emp)return;
+  document.getElementById('self-profile').innerHTML=`
+    <div class="flex items-center gap-4 mb-4">
+      <div class="emp-avatar" style="width:56px;height:56px;font-size:22px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2))">${emp.prenom[0]}${emp.nom[0]}</div>
+      <div><div class="font-bold" style="font-size:17px">${emp.prenom} ${emp.nom}</div><div class="text-muted">${emp.poste} — ${emp.departement}</div><span class="badge badge-success mt-2">✅ Actif</span></div>
+    </div>
+    <div class="grid-2" style="gap:8px">
+      <div><div class="text-xs text-muted">Email</div><div class="text-sm">${emp.email}</div></div>
+      <div><div class="text-xs text-muted">Téléphone</div><div class="text-sm">${emp.telephone||'—'}</div></div>
+      <div><div class="text-xs text-muted">Contrat</div><div class="text-sm">${emp.contrat||'CDI'}</div></div>
+      <div><div class="text-xs text-muted">Date embauche</div><div class="text-sm">${emp.date_embauche||'—'}</div></div>
+    </div>`;
+  const ml=APP.leaves.filter(l=>l.employee_id===emp.id);
+  const taken=ml.filter(l=>l.statut==='approuvé').reduce((s,l)=>s+Math.ceil((new Date(l.date_fin)-new Date(l.date_debut))/86400000)+1,0);
+  document.getElementById('self-leaves').innerHTML=`
+    <div class="grid-2" style="gap:8px;margin-bottom:12px">
+      <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:10px"><div style="font-size:28px;font-weight:800;color:var(--accent)">${24-taken}</div><div class="text-xs text-muted">Jours restants</div></div>
+      <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:10px"><div style="font-size:28px;font-weight:800;color:var(--warning)">${taken}</div><div class="text-xs text-muted">Jours pris</div></div>
+    </div>
+    ${ml.slice(0,3).map(l=>`<div class="flex items-center justify-between" style="padding:8px 0;border-bottom:1px solid var(--border)"><div><div class="text-sm font-semibold">${l.type_conge}</div><div class="text-xs text-muted">${l.date_debut} → ${l.date_fin}</div></div><span class="badge ${l.statut==='approuvé'?'badge-success':l.statut==='refusé'?'badge-danger':'badge-warning'}">${l.statut}</span></div>`).join('')}`;
+  const c=calcPayroll(emp);
+  document.getElementById('self-payslips').innerHTML=`
+    <div style="padding:12px;background:var(--surface2);border-radius:10px">
+      <div class="flex justify-between items-center">
+        <div><div class="font-bold">Mai 2026</div><div class="text-xs text-muted">Net : ${c.net.toLocaleString('fr-FR')} FCFA</div></div>
+        <div class="flex gap-2">
+          <button class="btn btn-pdf btn-sm" onclick="openPayslipModal(${emp.id})">📄 PDF</button>
+          <button class="btn btn-whatsapp btn-sm" onclick="sendWA(${emp.id})">💬 WA</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('self-docs').innerHTML=APP.documents.filter(d=>d.employee_id===emp.id).slice(0,3).map(d=>`<div class="flex items-center gap-2" style="padding:8px 0;border-bottom:1px solid var(--border)"><span>📄</span><div class="text-sm flex-1">${d.nom}</div><span class="badge badge-info">${d.type}</span></div>`).join('')||'<div class="text-sm text-muted">Aucun document</div>';
+}
+function generateAttestation(){
+  const emp=APP.employees[0];if(!emp)return;
+  try{
+    const{jsPDF}=window.jspdf;const doc=new jsPDF();
+    doc.setFontSize(20);doc.setFont('helvetica','bold');doc.text('ATTESTATION DE TRAVAIL',105,40,{align:'center'});
+    doc.setFontSize(12);doc.setFont('helvetica','normal');
+    doc.text('Nous soussignés, la Direction de AXIS ADMIN ET RH, attestons que :',14,80);
+    doc.setFont('helvetica','bold');doc.text(`M./Mme ${emp.prenom} ${emp.nom}`,14,98);
+    doc.setFont('helvetica','normal');
+    doc.text(`Occupant le poste de ${emp.poste} au sein du département ${emp.departement},`,14,110);
+    doc.text(`est bien employé(e) dans notre entreprise depuis le ${emp.date_embauche||'—'},`,14,120);
+    doc.text(`dans le cadre d'un contrat à durée ${emp.contrat==='CDI'?'indéterminée':'déterminée'}.`,14,130);
+    doc.text('La présente attestation est délivrée pour servir et valoir ce que de droit.',14,150);
+    doc.text(`Fait à Cotonou, le ${new Date().toLocaleDateString('fr-FR')}`,14,170);
+    doc.text('La Direction Générale — AXIS ADMIN ET RH',14,190);
+    doc.setFontSize(9);doc.setTextColor(150);doc.text('Généré par RHSMART AXIS — rhsmart-axis.vercel.app',105,285,{align:'center'});
+    doc.save(`attestation_${emp.nom}.pdf`);toast('📄 Attestation générée !');
+  }catch(e){toast('Erreur: '+e.message,'error');}
+}
+
+// ═══ SUPER ADMIN ═══
+function renderSuperAdmin(){
+  const tEmp=APP.companies.reduce((s,c)=>s+(c.employes||0),0);
+  const ent=APP.companies.filter(c=>c.plan==='Enterprise').length;
+  const rev=APP.companies.reduce((s,c)=>s+(c.plan==='Enterprise'?150000:c.plan==='Pro'?75000:25000),0);
+  document.getElementById('sa-companies').textContent=APP.companies.length;
+  document.getElementById('sa-employees').textContent=tEmp;
+  document.getElementById('sa-enterprise').textContent=ent;
+  document.getElementById('sa-revenue').textContent=rev.toLocaleString('fr-FR')+' FCFA';
+  const pb={'Enterprise':'badge-accent','Pro':'badge-info','Starter':'badge-warning'};
+  document.getElementById('companies-table-body').innerHTML=APP.companies.map(c=>`
+    <tr>
+      <td class="td-name">${c.nom}</td>
+      <td class="text-muted">${c.email_admin}</td>
+      <td><span class="badge ${pb[c.plan]||'badge-info'}">${c.plan}</span></td>
+      <td>${c.employes||0}</td>
+      <td><span class="badge ${c.actif?'badge-success':'badge-danger'}">${c.actif?'Actif':'Inactif'}</span></td>
+      <td class="text-muted">${c.created_at||'—'}</td>
+      <td><div class="td-actions"><button class="btn btn-secondary btn-sm">👁️</button><button class="btn btn-danger btn-sm" onclick="toggleComp(${c.id})">${c.actif?'🔒':'🔓'}</button></div></td>
+    </tr>`).join('');
+}
+function addCompany(){
+  const nom=document.getElementById('comp-name').value;const email_admin=document.getElementById('comp-email').value;
+  if(!nom||!email_admin){toast('Nom et email obligatoires','error');return;}
+  APP.companies.push({id:Date.now(),nom,email_admin,plan:document.getElementById('comp-plan').value,actif:true,employes:0,created_at:new Date().toISOString().slice(0,10)});
+  closeModal('modal-add-company');toast('✅ Entreprise créée !');logAudit('Entreprise créée',nom);renderSuperAdmin();
+}
+function toggleComp(id){const c=APP.companies.find(x=>x.id===id);if(c)c.actif=!c.actif;toast(`Entreprise ${c?.actif?'activée':'suspendue'}`,'info');renderSuperAdmin();}
+
+// ═══ AUDIT ═══
+function renderAudit(){
+  document.getElementById('audit-table-body').innerHTML=APP.audit.length?APP.audit.slice(0,50).map(a=>`
+    <tr><td class="text-xs text-muted">${a.date}</td><td><span class="badge badge-accent">${a.user}</span></td><td class="font-semibold">${a.action}</td><td class="text-muted">${a.detail}</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text3)">Aucun log</td></tr>';
+}
+
+// ═══ SETTINGS ═══
+function switchSettingsTab(tab){
+  ['entreprise','paie','conges','securite'].forEach(t=>{const el=document.getElementById('settings-'+t);if(el)el.classList.toggle('hidden',t!==tab);});
+  document.querySelectorAll('#page-settings .tab').forEach((t,i)=>t.classList.toggle('active',['entreprise','paie','conges','securite'][i]===tab));
+}
+
+// ═══ CLOCK ═══
+function saveClocking(){
+  const empId=document.getElementById('clock-employee-id').value;
+  const type=document.getElementById('clock-type').value;
+  const emp=APP.employees.find(e=>e.id==empId);
+  closeModal('modal-manual-clock');toast(`✅ Pointage ${type} enregistré pour ${emp?.prenom||'l\'employé'} !`);logAudit('Pointage manuel',(emp?.prenom||'')+' '+type);
+}
+
+// ═══ AI ASSISTANT ═══
+let aiOpen=false;
+function toggleAI(){aiOpen=!aiOpen;document.getElementById('ai-panel').classList.toggle('open',aiOpen);}
+function aiQuick(text){document.getElementById('ai-input').value=text;sendAIMessage();}
+async function sendAIMessage(){
+  const input=document.getElementById('ai-input');const text=input.value.trim();if(!text)return;
+  const msgs=document.getElementById('ai-messages');
+  msgs.innerHTML+=`<div class="ai-msg user"><div class="ai-msg-bubble">${text}</div></div>`;
+  input.value='';msgs.scrollTop=msgs.scrollHeight;
+  const tid='t'+Date.now();
+  msgs.innerHTML+=`<div class="ai-msg bot" id="${tid}"><div class="ai-msg-bubble"><span class="ai-typing"><span></span><span></span><span></span></span></div></div>`;
+  msgs.scrollTop=msgs.scrollHeight;
+  const ms=APP.employees.reduce((s,e)=>s+(e.salaire||0),0);
+  const pl=APP.leaves.filter(l=>l.statut==='en attente').length;
+  const avg=APP.evaluations.length?(APP.evaluations.reduce((s,e)=>s+e.score,0)/APP.evaluations.length).toFixed(1):'N/A';
+  const sys=`Tu es l'assistant RH expert de RHSMART AXIS, SIRH pour entreprises africaines (Bénin, OHADA).
+Données: ${APP.employees.length} employés, masse salariale ${ms.toLocaleString('fr-FR')} FCFA, ${pl} congés en attente, score moyen ${avg}/5, CNSS ${APP.payrollParams.cnss}%, ITS ${APP.payrollParams.its}%.
+Réponds en français, sois précis et pratique.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:[{role:'user',content:text}]})});
+    const data=await res.json();
+    const reply=data.content?.map(c=>c.text||'').join('')||'Je suis là pour vous aider !';
+    document.getElementById(tid)?.remove();
+    msgs.innerHTML+=`<div class="ai-msg bot"><div class="ai-msg-bubble">${reply.replace(/\n/g,'<br/>')}</div></div>`;
+  }catch(e){
+    document.getElementById(tid)?.remove();
+    const fb={'masse salariale':`💰 Masse salariale actuelle : <strong>${ms.toLocaleString('fr-FR')} FCFA</strong> pour ${APP.employees.length} employés (moy. ${Math.round(ms/APP.employees.length).toLocaleString('fr-FR')} FCFA/employé).`,'congé':`🏖️ ${pl} demande(s) de congé en attente. Allez dans le module Congés pour les traiter.`,'turnover':`⚠️ Pour réduire le turnover : entretiens individuels, révision des salaires, plan de formation.`,'rapport':`📊 Rapport RH — ${APP.employees.length} employés actifs, MS: ${ms.toLocaleString('fr-FR')} FCFA, score moyen: ${avg}/5, ${pl} congés en attente.`};
+    const key=Object.keys(fb).find(k=>text.toLowerCase().includes(k));
+    msgs.innerHTML+=`<div class="ai-msg bot"><div class="ai-msg-bubble">${key?fb[key]:`Avec ${APP.employees.length} employés et ${ms.toLocaleString('fr-FR')} FCFA de masse salariale, vos indicateurs RH sont dans une plage normale. Souhaitez-vous un rapport détaillé ?`}</div></div>`;
+  }
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+// ═══ EXPORT EMPLOYEES PDF ═══
+function exportEmployeesPDF(){
+  try{
+    const{jsPDF}=window.jspdf;const doc=new jsPDF();
+    doc.setFontSize(16);doc.text('RHSMART AXIS — Liste des Employés',14,20);
+    doc.setFontSize(10);doc.text(`${APP.employees.length} employés — ${new Date().toLocaleDateString('fr-FR')}`,14,28);
+    doc.autoTable({head:[['Nom','Poste','Département','Salaire','Contrat','Statut']],body:APP.employees.map(e=>[e.prenom+' '+e.nom,e.poste,e.departement,(e.salaire||0).toLocaleString()+' FCFA',e.contrat||'CDI',e.statut||'actif']),startY:35});
+    doc.save('employes_rhsmart.pdf');toast('📄 Liste exportée !');
+  }catch(e){toast('Erreur: '+e.message,'error');}
+}
+
+// ═══ INIT ═══
+window.addEventListener('load',async()=>{
+  const ct=document.getElementById('clock-time');if(ct)ct.value=new Date().toISOString().slice(0,16);
+  await loadAllData();
+  setTimeout(()=>{const l=document.getElementById('global-loader');l.style.opacity='0';setTimeout(()=>l.style.display='none',500);},1200);
+  renderDashboard();
+  addNotif('🚀','RHSMART AXIS v2.0','Toutes les fonctionnalités sont actives !');
+  if(APP.leaves.filter(l=>l.statut==='en attente').length>0)addNotif('🏖️','Congés en attente',APP.leaves.filter(l=>l.statut==='en attente').length+' demande(s) à traiter');
+});
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});});
+
+// ============================================================
+// SYSTÈME AUTH — RÔLES & SÉCURITÉ
+// ============================================================
+
+const ROLE_CONFIG = {
+  super_admin: {
+    label: '👑 Super Admin', color: '#f87171', bg: 'rgba(248,113,113,0.15)', border: 'rgba(248,113,113,0.3)',
+    initials: 'SA', accentColor: '#f87171',
+    pages: ['dashboard','analytics','employees','orgchart','attendance','leaves','payroll','evaluations','documents','import','announcements','selfservice','superadmin','audit','settings'],
+    hidden: []
+  },
+  admin_rh: {
+    label: '🛡️ Admin RH', color: '#00e5b4', bg: 'rgba(0,229,180,0.15)', border: 'rgba(0,229,180,0.3)',
+    initials: 'RH', accentColor: '#00e5b4',
+    pages: ['dashboard','analytics','employees','orgchart','attendance','leaves','payroll','evaluations','documents','import','announcements','selfservice','audit','settings'],
+    hidden: ['superadmin']
+  },
+  manager: {
+    label: '👔 Manager', color: '#60a5fa', bg: 'rgba(96,165,250,0.15)', border: 'rgba(96,165,250,0.3)',
+    initials: 'MG', accentColor: '#60a5fa',
+    pages: ['dashboard','employees','attendance','leaves','evaluations','selfservice'],
+    hidden: ['analytics','orgchart','payroll','documents','import','announcements','superadmin','audit','settings']
+  },
+  employe: {
+    label: '👤 Employé', color: '#c084fc', bg: 'rgba(192,132,252,0.15)', border: 'rgba(192,132,252,0.3)',
+    initials: 'EM', accentColor: '#c084fc',
+    pages: ['selfservice'],
+    hidden: ['dashboard','analytics','employees','orgchart','attendance','leaves','payroll','evaluations','documents','import','announcements','superadmin','audit','settings']
+  }
+};
+
+// SESSION COURANTE
+let currentUser = null;
+
+// Initialisation auth au démarrage
+(async function initAuth() {
+  // 1. Vérifier sessionStorage (connexion récente)
+  const stored = sessionStorage.getItem('rh_user');
+  if (stored) {
+    try {
+      currentUser = JSON.parse(stored);
+      applyUserSession(currentUser);
+      return;
+    } catch(e) {}
+  }
+
+  // 2. Vérifier session Supabase active
+  if (sb) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      const role = await getRoleFromSupabase(session.user.id);
+      const companyId = await getCompanyIdFromSupabase(session.user.id);
+      currentUser = {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+        role: role,
+        company_id: companyId
+      };
+      sessionStorage.setItem('rh_user', JSON.stringify(currentUser));
+      applyUserSession(currentUser);
+      return;
+    }
+  }
+
+  // 3. Pas de session — afficher modal login après chargement
+  setTimeout(() => openModal('modal-login'), 1500);
+})();
+
+async function getRoleFromSupabase(userId) {
+  try {
+    const { data } = await sb.from('user_profiles').select('role').eq('user_id', userId).single();
+    return data?.role || 'employe';
+  } catch { return 'employe'; }
+}
+
+async function getCompanyIdFromSupabase(userId) {
+  try {
+    const { data } = await sb.from('user_profiles').select('company_id').eq('user_id', userId).single();
+    return data?.company_id || null;
+  } catch { return null; }
+}
+
+// ============================================================
+// APPLIQUER LA SESSION — UI + PERMISSIONS
+// ============================================================
+function applyUserSession(user) {
+  const config = ROLE_CONFIG[user.role] || ROLE_CONFIG['employe'];
+
+  // Topbar
+  const initials = (user.name || 'U').split(' ').map(w=>w[0]).join('').substr(0,2).toUpperCase();
+  const avatar = document.getElementById('topbar-avatar');
+  if(avatar){ avatar.textContent = initials; avatar.style.background = config.accentColor; }
+  const uname = document.getElementById('topbar-uname');
+  if(uname) uname.textContent = user.name || user.email;
+  const urole = document.getElementById('topbar-urole');
+  if(urole){ urole.textContent = config.label; urole.style.color = config.accentColor; }
+  const dropEmail = document.getElementById('drop-email');
+  if(dropEmail) dropEmail.textContent = user.email;
+  const dropRole = document.getElementById('drop-role-label');
+  if(dropRole){ dropRole.textContent = config.label; dropRole.style.color = config.accentColor; }
+
+  // Sidebar
+  const sbName = document.getElementById('sidebar-username');
+  if(sbName) sbName.textContent = user.name || user.email;
+  const sbCompany = document.getElementById('sidebar-company');
+  if(sbCompany) sbCompany.textContent = user.email;
+  const sbPill = document.getElementById('sidebar-role-pill');
+  if(sbPill){
+    sbPill.textContent = config.label;
+    sbPill.style.background = config.bg;
+    sbPill.style.borderColor = config.border;
+    sbPill.style.color = config.color;
+  }
+  const sbBadge = document.getElementById('sidebar-badge');
+  if(sbBadge){ sbBadge.textContent = config.initials; sbBadge.style.background = config.accentColor; sbBadge.style.color = '#000'; }
+
+  // Masquer les items nav selon le rôle
+  applyNavPermissions(config);
+
+  // Redirection si employé → selfservice directement
+  if(user.role === 'employe') {
+    navigate('selfservice');
+    // Masquer sidebar
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if(!n.id || n.id === 'nav-selfservice') return;
+      n.classList.add('role-hidden');
+    });
+  }
+
+  // Stocker company_id global
+  if(user.company_id) window.currentCompanyId = user.company_id;
+
+  toast('👋 Bienvenue ' + (user.name || 'utilisateur') + ' — ' + config.label, 'success');
+}
+
+function applyNavPermissions(config) {
+  config.hidden.forEach(page => {
+    const nav = document.getElementById('nav-' + page);
+    if(nav) nav.classList.add('role-hidden');
+  });
+}
+
+// Override navigate pour vérifier les permissions
+const _originalNavigate = navigate;
+window.navigate = function(page) {
+  if(currentUser) {
+    const config = ROLE_CONFIG[currentUser.role] || ROLE_CONFIG['employe'];
+    if(!config.pages.includes(page) && currentUser.role !== 'super_admin') {
+      toast('🔒 Accès refusé — Votre rôle ne permet pas d\'accéder à cette section.', 'error');
+      return;
+    }
+  }
+  _originalNavigate(page);
+};
+
+// ============================================================
+// USER MENU DROPDOWN
+// ============================================================
+function toggleUserMenu() {
+  document.getElementById('userDropdown').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('userMenuWrap');
+  if(wrap && !wrap.contains(e.target)) {
+    document.getElementById('userDropdown').classList.remove('open');
+  }
+});
+
+// ============================================================
+// DÉCONNEXION
+// ============================================================
+async function doLogout() {
+  if(!confirm('Voulez-vous vraiment vous déconnecter ?')) return;
+  sessionStorage.removeItem('rh_user');
+  currentUser = null;
+  if(sb) await sb.auth.signOut();
+  toast('👋 Déconnexion...', 'info');
+  setTimeout(() => { openModal('modal-login'); }, 500);
+}
+
+// ============================================================
+// IMPORT MODULE JS (déjà présent plus bas)
+// ============================================================
+let importData=[];
+const IMPORT_REQUIRED=['NOM','PRENOM','POSTE','DEPARTEMENT','DATE_EMBAUCHE','SALAIRE_BRUT','TELEPHONE'];
+
+function downloadImportTemplate(){
+  const headers='NOM *,PRENOM *,MATRICULE,POSTE *,DEPARTEMENT *,DATE_EMBAUCHE *,SALAIRE_BRUT *,TELEPHONE *,EMAIL,GENRE,DATE_NAISSANCE,NATIONALITE,N_CNSS,TYPE_CONTRAT,OBSERVATIONS';
+  const ex1='GANSE,Aubin,EMP-001,Directeur RH,Ressources Humaines,01/01/2022,450000,97000001,a.ganse@rh.bj,M,15/03/1985,Béninoise,CN-001234,CDI,';
+  const ex2='DOSSOU,Marie,EMP-002,RH Manager,Ressources Humaines,15/03/2022,320000,96000002,m.dossou@rh.bj,F,22/07/1988,Béninoise,,CDI,';
+  const csv=headers+'\n'+ex1+'\n'+ex2+'\n';
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='RHSMART_Import_Employes.csv';a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ Modèle CSV téléchargé !','success');
+}
+function handleImportDrop(e){
+  e.preventDefault();
+  document.getElementById('dropZoneImport').style.borderColor='var(--border)';
+  const file=e.dataTransfer.files[0];if(file)processImportFile(file);
+}
+function handleImportFile(e){const file=e.target.files[0];if(file)processImportFile(file);}
+function processImportFile(file){
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(!['csv','xlsx','xls'].includes(ext)){toast('Format non supporté. Utilisez CSV.','error');return;}
+  setImportStep(2);
+  const reader=new FileReader();
+  reader.onload=e=>parseImportCSV(typeof e.target.result==='string'?e.target.result:'');
+  if(ext==='csv')reader.readAsText(file,'UTF-8');
+  else{toast('Exportez votre Excel en CSV pour un meilleur résultat.','info');reader.readAsArrayBuffer(file);}
+}
+function parseImportCSV(text){
+  text=text.replace(/^\uFEFF/,'');
+  const lines=text.split('\n').filter(l=>l.trim());
+  if(lines.length<2){toast('Fichier vide ou invalide','error');return;}
+  const sep=lines[0].includes(';')?';':',';
+  const rawHeaders=lines[0].split(sep).map(h=>h.trim().replace(/\*/g,'').trim().toUpperCase());
+  importData=[];
+  const existingKeys=new Set((APP.employees||[]).map(e=>(e.nom+e.prenom).toLowerCase().replace(/\s/g,'')));
+  for(let i=1;i<lines.length;i++){
+    if(!lines[i].trim())continue;
+    const vals=lines[i].split(sep).map(v=>v.trim().replace(/^"|"$/g,''));
+    const row={};rawHeaders.forEach((h,idx)=>{row[h]=vals[idx]||'';});
+    const errors=[];
+    IMPORT_REQUIRED.forEach(col=>{if(!row[col])errors.push(col+' manquant');});
+    if(row['SALAIRE_BRUT']&&isNaN(Number(row['SALAIRE_BRUT'].replace(/\s/g,''))))errors.push('SALAIRE_BRUT invalide');
+    const key=((row['NOM']||'')+(row['PRENOM']||'')).toLowerCase().replace(/\s/g,'');
+    const isDupe=existingKeys.has(key);
+    importData.push({...row,_line:i,_errors:errors,_isDupe:isDupe,_status:isDupe?'dupe':(errors.length?'error':'valid')});
+  }
+  showImportPreview();
+}
+function showImportPreview(){
+  setImportStep(3);
+  document.getElementById('import-upload-zone').style.display='none';
+  document.getElementById('import-preview-zone').style.display='block';
+  const total=importData.length,valid=importData.filter(r=>r._status==='valid').length,
+    errors=importData.filter(r=>r._status==='error').length,dupes=importData.filter(r=>r._status==='dupe').length;
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-valid').textContent=valid;
+  document.getElementById('stat-errors').textContent=errors;
+  document.getElementById('stat-dupes').textContent=dupes;
+  document.getElementById('previewTitle').textContent='Aperçu — '+total+' ligne(s)';
+  const btn=document.getElementById('btnConfirmImport');
+  btn.disabled=valid===0;if(valid>0)btn.textContent='✅ Importer '+valid+' employé(s)';
+  renderImportTable('all');
+}
+function renderImportTable(filter){
+  const cols=['NOM','PRENOM','POSTE','DEPARTEMENT','DATE_EMBAUCHE','SALAIRE_BRUT','TELEPHONE','TYPE_CONTRAT'];
+  const filtered=filter==='all'?importData:importData.filter(r=>r._status===filter);
+  document.getElementById('previewHead').innerHTML=`<tr><th style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);font-size:11px">Ligne</th><th style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);font-size:11px">Statut</th>${cols.map(c=>`<th style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);font-size:11px;white-space:nowrap">${c}</th>`).join('')}<th style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);font-size:11px">Détail</th></tr>`;
+  document.getElementById('previewBody').innerHTML=filtered.slice(0,50).map(row=>{
+    const icon=row._status==='valid'?'✅':row._status==='dupe'?'⚠️':'❌';
+    const color=row._status==='valid'?'var(--success)':row._status==='dupe'?'var(--warning)':'var(--danger)';
+    return `<tr style="background:${row._status==='error'?'rgba(239,68,68,0.05)':row._status==='dupe'?'rgba(245,158,11,0.05)':''}"><td style="padding:9px 12px;border:1px solid var(--border);font-size:11px;color:var(--text3)">${row._line}</td><td style="padding:9px 12px;border:1px solid var(--border);font-size:11px;color:${color};font-weight:700">${icon} ${row._status}</td>${cols.map(c=>`<td style="padding:9px 12px;border:1px solid var(--border);font-size:12px;white-space:nowrap">${row[c]||'<span style="color:var(--text3)">—</span>'}</td>`).join('')}<td style="padding:9px 12px;border:1px solid var(--border);font-size:11px;color:${color}">${row._errors.length?row._errors.join(', '):row._isDupe?'Doublon ignoré':'OK'}</td></tr>`;
+  }).join('');
+  document.getElementById('previewPager').textContent=filtered.length>50?`1-50 sur ${filtered.length}`:`${filtered.length} ligne(s)`;
+  ['all','valid','error','dupe'].forEach(f=>{const b=document.getElementById('ifilter-'+f);if(b){b.style.borderColor=f===filter?'var(--accent)':'var(--border)';b.style.color=f===filter?'var(--accent)':'var(--text2)';}});
+}
+function filterImportRows(f){renderImportTable(f);}
+async function confirmImport(){
+  setImportStep(4);
+  const validRows=importData.filter(r=>r._status==='valid');
+  let imported=0,failed=0;
+  const btn=document.getElementById('btnConfirmImport');btn.disabled=true;btn.textContent='⏳ Import...';
+  for(const row of validRows){
+    try{
+      const emp={nom:row['NOM']||'',prenom:row['PRENOM']||'',matricule:row['MATRICULE']||'EMP-'+String(Date.now()).slice(-5),poste:row['POSTE']||'',departement:row['DEPARTEMENT']||'',date_embauche:importConvertDate(row['DATE_EMBAUCHE']),salaire_base:Number((row['SALAIRE_BRUT']||'0').replace(/\s/g,'')),telephone:row['TELEPHONE']||'',email:row['EMAIL']||'',genre:(row['GENRE']||'M').toUpperCase(),type_contrat:row['TYPE_CONTRAT']||'CDI',statut:'actif'};
+      if(sb&&window.currentCompanyId){const{error}=await sb.from('employes').insert([{...emp,company_id:window.currentCompanyId}]);if(error){failed++;continue;}}
+      if(APP&&APP.employees)APP.employees.push(emp);imported++;
+    }catch(e){failed++;}
+  }
+  document.getElementById('import-preview-zone').style.display='none';
+  document.getElementById('import-result-zone').style.display='block';
+  document.getElementById('resultIcon').textContent=failed===0?'🎉':'⚠️';
+  document.getElementById('resultTitle').textContent=failed===0?'Import réussi !':imported+' importés, '+failed+' échoués';
+  document.getElementById('resultDesc').textContent=imported+' employé(s) ajouté(s) dans RHSMART AXIS.'+(failed>0?' '+failed+' ligne(s) ont échoué.':'');
+  if(typeof renderEmployees==='function')renderEmployees();
+  toast('✅ '+imported+' employé(s) importé(s) !','success');
+}
+function importConvertDate(str){if(!str)return null;const p=str.split('/');if(p.length===3)return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');return str;}
+function setImportStep(n){for(let i=1;i<=4;i++){const el=document.getElementById('step-'+i),dot=document.getElementById('step-dot-'+i);if(!el||!dot)continue;if(i<n){el.style.opacity='1';dot.style.background='var(--success)';dot.style.color='#fff';dot.textContent='✓';}else if(i===n){el.style.opacity='1';dot.style.background='var(--accent)';dot.style.color='#000';dot.textContent=i;}else{el.style.opacity='0.4';dot.style.background='var(--surface3)';dot.style.color='var(--text2)';dot.textContent=i;}}}
+function resetImport(){importData=[];document.getElementById('import-upload-zone').style.display='block';document.getElementById('import-preview-zone').style.display='none';document.getElementById('import-result-zone').style.display='none';document.getElementById('importFileInput').value='';setImportStep(1);}
+
+// ============================================================
+// MODAL LOGIN INTÉGRÉ — FONCTIONS
+// ============================================================
+async function doModalLogin() {
+  const email = document.getElementById('modal-login-email').value.trim();
+  const pw = document.getElementById('modal-login-pw').value;
+  const err = document.getElementById('login-err');
+  const ok = document.getElementById('login-ok');
+  const btn = document.getElementById('modal-login-btn');
+  err.style.display='none'; ok.style.display='none';
+  if(!email||!pw){err.textContent='❌ Remplissez tous les champs.';err.style.display='block';return;}
+  btn.disabled=true; btn.textContent='⏳ Connexion...';
+  try {
+    let client = sb;
+    if(!client) {
+      client = supabase.createClient('https://uaspipsffvtbiydswqwt.supabase.co','sb_publishable_fop-_msYrKe-q7wEMkL-Hw_5RIg8EIo');
+    }
+    const {data, error} = await client.auth.signInWithPassword({email, password: pw});
+    if(error) throw error;
+    let role = 'employe';
+    try {
+      const {data: p} = await client.from('user_profiles').select('role').eq('user_id', data.user.id).single();
+      if(p?.role) role = p.role;
+    } catch(e) {}
+    currentUser = {
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.user_metadata?.full_name || data.user.email.split('@')[0],
+      role: role,
+      company_id: null
+    };
+    sessionStorage.setItem('rh_user', JSON.stringify(currentUser));
+    ok.textContent = '✅ Connexion réussie !';
+    ok.style.display = 'block';
+    setTimeout(() => {
+      closeModal('modal-login');
+      applyUserSession(currentUser);
+      navigate('dashboard');
+    }, 800);
+  } catch(e) {
+    const msgs = {
+      'Invalid login credentials': 'Email ou mot de passe incorrect.',
+      'Email not confirmed': "Confirmez votre email d'abord."
+    };
+    err.textContent = '❌ ' + (msgs[e.message] || e.message || 'Erreur inattendue');
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Se connecter';
+  }
+}
+
+async function doModalRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pw = document.getElementById('reg-pw').value;
+  const err = document.getElementById('reg-err');
+  const ok = document.getElementById('reg-ok');
+  const btn = document.getElementById('modal-reg-btn');
+  err.style.display='none'; ok.style.display='none';
+  if(!name||!email||!pw){err.textContent='❌ Remplissez tous les champs.';err.style.display='block';return;}
+  if(pw.length<8){err.textContent='❌ Mot de passe trop court (min. 8 car.).';err.style.display='block';return;}
+  btn.disabled=true; btn.textContent='⏳ Création...';
+  try {
+    let client = sb;
+    if(!client) {
+      client = supabase.createClient('https://uaspipsffvtbiydswqwt.supabase.co','sb_publishable_fop-_msYrKe-q7wEMkL-Hw_5RIg8EIo');
+    }
+    const {data, error} = await client.auth.signUp({email, password: pw, options:{data:{full_name:name}}});
+    if(error) throw error;
+    if(data.user) {
+      try { await client.from('user_profiles').insert([{user_id: data.user.id, role: 'employe'}]); } catch(e) {}
+    }
+    ok.textContent = '✅ Compte créé ! Connectez-vous maintenant.';
+    ok.style.display = 'block';
+    btn.disabled=false; btn.textContent='Créer mon compte';
+    setTimeout(()=>{ closeModal('modal-register'); openModal('modal-login'); }, 2000);
+  } catch(e) {
+    const msgs = {'User already registered': 'Un compte existe déjà avec cet email.'};
+    err.textContent = '❌ ' + (msgs[e.message] || e.message || 'Erreur');
+    err.style.display='block';
+    btn.disabled=false; btn.textContent='Créer mon compte';
+  }
+}
+
+function showModalRegister(){
+  closeModal('modal-login');
+  openModal('modal-register');
+}
+
+
+function toggleModalPw(id, btn) {
+  const input = document.getElementById(id);
+  if(!input) return;
+  input.type = input.type === 'password' ? 'text' : 'password';
+  btn.textContent = input.type === 'password' ? '👁️' : '🙈';
+}
+
+function showModalForgot() {
+  closeModal('modal-login');
+  openModal('modal-forgot');
+}
+
+async function doModalForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  const err = document.getElementById('forgot-err');
+  const ok = document.getElementById('forgot-ok');
+  err.style.display='none'; ok.style.display='none';
+  if(!email){err.textContent='❌ Entrez votre email.';err.style.display='block';return;}
+  try {
+    let client = sb;
+    if(!client){
+      client = supabase.createClient('https://uaspipsffvtbiydswqwt.supabase.co','sb_publishable_fop-_msYrKe-q7wEMkL-Hw_5RIg8EIo');
+    }
+    const {error} = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password.html'
+    });
+    if(error) throw error;
+    ok.textContent = '✅ Email envoyé ! Vérifiez votre boîte mail.';
+    ok.style.display = 'block';
+  } catch(e) {
+    err.textContent = '❌ ' + (e.message || 'Erreur inattendue');
+    err.style.display = 'block';
+  }
+}
+
+</script>
+
+<!-- MODAL LOGIN RÉEL -->
+<div class="modal-overlay" id="modal-login" style="z-index:99999">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">🔐 Connexion RHSMART AXIS</div>
+    </div>
+    <div id="login-err" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#ef4444;margin-bottom:16px;display:none"></div>
+    <div id="login-ok" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#22c55e;margin-bottom:16px;display:none"></div>
+    <div class="form-group">
+      <label class="form-label">EMAIL</label>
+      <input type="email" class="form-input" id="modal-login-email" placeholder="vous@exemple.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">MOT DE PASSE</label>
+      <input type="password" class="form-input" id="modal-login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doModalLogin()" style="padding-right:44px">
+      <button type="button" onclick="toggleModalPw('modal-login-pw',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">👁️</button>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:10px" onclick="doModalLogin()" id="modal-login-btn">
+      Se connecter
+    </button>
+    <div style="text-align:right;margin-bottom:10px">
+      <span style="color:var(--accent2);font-size:12px;cursor:pointer" onclick="showModalForgot()">Mot de passe oublié ?</span>
+    </div>
+    <div style="text-align:center;font-size:12px;color:var(--text2)">
+      Pas de compte ? <span style="color:var(--accent);cursor:pointer" onclick="showModalRegister()">Créer un compte</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MOT DE PASSE OUBLIÉ -->
+<div class="modal-overlay" id="modal-forgot" style="z-index:99999">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">🔑 Mot de passe oublié</div>
+      <button class="modal-close" onclick="closeModal('modal-forgot');openModal('modal-login')">✕</button>
+    </div>
+    <div id="forgot-err" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#ef4444;margin-bottom:16px;display:none"></div>
+    <div id="forgot-ok" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#22c55e;margin-bottom:16px;display:none"></div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Entrez votre email — vous recevrez un lien pour réinitialiser votre mot de passe.</p>
+    <div class="form-group">
+      <label class="form-label">VOTRE EMAIL</label>
+      <input type="email" class="form-input" id="forgot-email" placeholder="vous@exemple.com">
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:10px" onclick="doModalForgot()">
+      📧 Envoyer le lien
+    </button>
+    <button class="btn btn-secondary" style="width:100%" onclick="closeModal('modal-forgot');openModal('modal-login')">
+      ← Retour
+    </button>
+  </div>
+</div>
+
+<!-- MODAL REGISTER RÉEL -->
+<div class="modal-overlay" id="modal-register" style="z-index:99999">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">✨ Créer un compte</div>
+      <button class="modal-close" onclick="closeModal('modal-register');openModal('modal-login')">✕</button>
+    </div>
+    <div id="reg-err" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#ef4444;margin-bottom:16px;display:none"></div>
+    <div id="reg-ok" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#22c55e;margin-bottom:16px;display:none"></div>
+    <div class="form-group">
+      <label class="form-label">NOM COMPLET</label>
+      <input type="text" class="form-input" id="reg-name" placeholder="Votre nom">
+    </div>
+    <div class="form-group">
+      <label class="form-label">EMAIL</label>
+      <input type="email" class="form-input" id="reg-email" placeholder="vous@exemple.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">MOT DE PASSE</label>
+      <input type="password" class="form-input" id="reg-pw" placeholder="Min. 8 caractères">
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:10px" onclick="doModalRegister()" id="modal-reg-btn">
+      Créer mon compte
+    </button>
+  </div>
+</div>
+
+</body>
+</html>
+
+<!-- ═══ PWA SERVICE WORKER REGISTRATION ═══ -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => {
+          console.log('[RHSMART] Service Worker enregistré ✅', reg.scope);
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                if (confirm('🔄 Mise à jour RHSMART AXIS disponible. Recharger ?')) {
+                  window.location.reload();
+                }
+              }
+            });
+          });
+        })
+        .catch(err => console.warn('[RHSMART] SW:', err));
+    });
+  }
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const btn = document.getElementById('pwa-install-btn');
+    if (btn) {
+      btn.style.display = 'flex';
+      btn.addEventListener('click', () => {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(c => {
+          deferredPrompt = null;
+          btn.style.display = 'none';
+        });
+      });
+    }
+  });
+</script>
